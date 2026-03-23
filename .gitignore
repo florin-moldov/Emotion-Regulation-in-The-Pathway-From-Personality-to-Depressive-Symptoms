@@ -1,16 +1,24 @@
-# Python bytecode (compiled files)
-__pycache__/
-*.py[cod]
-*$py.class
+# The actual library (the heavy stuff)
+renv/library/
+renv/staging/
+renv/python/
 
-# Virtual Environments
-.neurovenv/
+# Local settings that shouldn't be shared
+renv/local/
+.Ruserdata
+.Rhistory
+
+# DO NOT ignore these (they are the "blueprint" of your project)
+!renv/activate.R
+!renv/settings.json
+!.Rprofile
+!renv.lock
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Environment variables (Sensitive Data!)
-.env
-
 # All of the data (all data is UKB data, which cannot be shared)
 data/
+
+# Virtual Environments
+.mthesisvenv/
