@@ -619,3 +619,6 @@ adjusted_p_values <- tibble(
 )
 
 write_csv(adjusted_p_values, "data/analysis/lms_adjusted_p_values.csv")
+
+# Save extended data with all transformations for future use
+write_csv(data, "data/analysis/extended_data_with_transformations.csv")
