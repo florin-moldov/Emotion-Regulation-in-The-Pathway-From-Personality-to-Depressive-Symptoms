@@ -591,7 +591,7 @@ p_values_h3_ang <- parameterEstimates(fit_h3_ang) |>
 cat("***Standardized parameter estimates H3 (Anger-specific Emotion)***\n")
 print(standardizedSolution(fit_h3_ang, ci = FALSE))
 
-# End sink to stop capturing output in the text file
+# End sink to stop capturing output in the text file ----
 sink(file = NULL)
 
 # FDR-correction of p-values by context ----
