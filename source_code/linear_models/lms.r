@@ -323,7 +323,7 @@ print(standardizedSolution(fit_h2_anger, ci = FALSE))
 # doesn't work with check_model() function from performance package
 # Also, now we are checking model assumptions univariatelly because 
 # performance package doesn't support multivariate (tried manual checks but failed, so will just check univariate models for now)
-fit_h3_mal_gen_check <- lm(maladaptive_score ~  extraversion + agreeableness + 
+fit_h3_mal_gen_check <- lm(maladaptive_score ~ extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
 svg("reports/plots/lm_diagnostics/check_model_h3_mal_general_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_mal_gen_check)) # good
