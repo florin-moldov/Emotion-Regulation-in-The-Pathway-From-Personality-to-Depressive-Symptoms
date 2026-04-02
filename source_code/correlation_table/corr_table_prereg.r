@@ -31,6 +31,14 @@ merged_data <- w6_hipic |>
                      maladaptive_score), by = "ID") |>
   full_join(w11_asr |>
               select(ID, depression_score), by = "ID")
+
+# Delete those with empty IDs (identified in demographics.r)
+merged_data <- merged_data |> 
+                filter(!is.na(ID))
+
+# Check nrows after merge
+cat("Number of rows after merge:", nrow(merged_data), "\n")
+
 # Save merged data for future use
 write_csv(merged_data, "data/merged/merged_data.csv")
 
