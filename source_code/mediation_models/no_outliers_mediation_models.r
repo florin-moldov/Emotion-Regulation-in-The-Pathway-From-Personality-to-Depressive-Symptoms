@@ -1,5 +1,9 @@
 # Mediation models per emotion regulation context
-#
+
+#################################################################
+# Outliers removed here, based on outlier_analysis.R script
+#################################################################
+
 # This script tests the fourth preregistered hypothesis by fitting mediation models for 
 # each emotion regulation context (general, sadness, anxiety, anger) 
 # and saving the results.
@@ -12,6 +16,7 @@
 #
 # Additionally, controls for sex effects.
 
+
 # Set seed for reproducibility ----
 set.seed(123)
 
@@ -19,11 +24,16 @@ set.seed(123)
 library(tidyverse)
 library(lavaan)
 
-# Load the extended data with transformations ----
-data <- read_csv("data/analysis/extended_data_with_transformations.csv")
+# Load separate datasets for each emotion-context ----
+# Separate because of different outliers removed per context and 
+# different transformed variables
+data_general <- read_csv("data/analysis/no_outliers_data_med_gen.csv")
+data_sadness <- read_csv("data/analysis/no_outliers_data_med_sad.csv")
+data_anxiety <- read_csv("data/analysis/no_outliers_data_med_anx.csv")
+data_anger <- read_csv("data/analysis/no_outliers_data_med_ang.csv")
 
 # Set sink to capture all output in a text file ----
-sink("data/analysis/mediation_output.txt")
+sink("data/analysis/no_outliers_mediation_output.txt")
 
 # Mediation model 1 (general) ----
 model_general <- "
@@ -36,13 +46,13 @@ model_general <- "
   maladaptive_score ~ a1*extraversion + a2*agreeableness + 
                       a3*conscientiousness + a4*neuroticism +
                       a5*openness + a6*sex
-  adaptive_score_box ~ a7*extraversion + a8*agreeableness + 
+  adaptive_score_yeo ~ a7*extraversion + a8*agreeableness + 
                        a9*conscientiousness + a10*neuroticism +
                        a11*openness + a12*sex
-  depression_score_yeo ~ b1*maladaptive_score + b2*adaptive_score_box
+  depression_score_yeo ~ b1*maladaptive_score + b2*adaptive_score_yeo
 
   # Covariance between mediators
-  maladaptive_score ~~ adaptive_score_box
+  maladaptive_score ~~ adaptive_score_yeo
   
   # Predictor-specific indirect effects via each mediator
     ind_ext_mal := a1*b1
@@ -76,7 +86,7 @@ model_general <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_general <- sem(model_general, data = data, missing = "fiml",
+fit_general <- sem(model_general, data = data_general, missing = "fiml",
               se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (General)***\n")
@@ -87,7 +97,7 @@ print(parameterEstimates(fit_general, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_general <- parameterEstimates(fit_general) |>
-  filter((lhs == "depression_score_yeo" | lhs == "maladaptive_score" | lhs == "adaptive_score_box" | 
+  filter((lhs == "depression_score_yeo" | lhs == "maladaptive_score" | lhs == "adaptive_score_yeo" | 
           lhs == "ind_ext_mal" | lhs == "ind_agr_mal" | lhs == "ind_con_mal" | lhs == "ind_neu_mal" | lhs == "ind_ope_mal" |
           lhs == "ind_ext_ada" | lhs == "ind_agr_ada" | lhs == "ind_con_ada" | lhs == "ind_neu_ada" | lhs == "ind_ope_ada" |
           lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
@@ -100,7 +110,7 @@ print(standardizedSolution(fit_general, ci = FALSE))
 # Mediation model 2 (sadness) ----
 model_sadness <- "
   # Direct effect
-  depression_score_yeo ~ c1*extraversion + c2*agreeableness + 
+  depression_score_sqrt ~ c1*extraversion + c2*agreeableness + 
                          c3*conscientiousness + c4*neuroticism + 
                          c5*openness + c6*sex
   
@@ -108,13 +118,13 @@ model_sadness <- "
   sadness_maladaptive_score ~ a1*extraversion + a2*agreeableness + 
                               a3*conscientiousness + a4*neuroticism +
                               a5*openness + a6*sex
-  sadness_adaptive_score_ord ~ a7*extraversion + a8*agreeableness + 
+  sadness_adaptive_score_box ~ a7*extraversion + a8*agreeableness + 
                                a9*conscientiousness + a10*neuroticism +
                                a11*openness + a12*sex
-  depression_score_yeo ~ b1*sadness_maladaptive_score + b2*sadness_adaptive_score_ord
+  depression_score_sqrt ~ b1*sadness_maladaptive_score + b2*sadness_adaptive_score_box
 
   # Covariance between mediators
-  sadness_maladaptive_score ~~ sadness_adaptive_score_ord
+  sadness_maladaptive_score ~~ sadness_adaptive_score_box
   
   # Predictor-specific indirect effects via each mediator
     ind_ext_sad_mal := a1*b1
@@ -148,7 +158,7 @@ model_sadness <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_sadness <- sem(model_sadness, data = data, missing = "fiml",
+fit_sadness <- sem(model_sadness, data = data_sadness, missing = "fiml",
               se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (Sadness)***\n")
@@ -159,7 +169,7 @@ print(parameterEstimates(fit_sadness, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_sadness <- parameterEstimates(fit_sadness) |>
-  filter((lhs == "depression_score_yeo" | lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_ord" | 
+  filter((lhs == "depression_score_sqrt" | lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_box" | 
           lhs == "ind_ext_sad_mal" | lhs == "ind_agr_sad_mal" | lhs == "ind_con_sad_mal" | lhs == "ind_neu_sad_mal" | lhs == "ind_ope_sad_mal" |
           lhs == "ind_ext_sad_ada" | lhs == "ind_agr_sad_ada" | lhs == "ind_con_sad_ada" | lhs == "ind_neu_sad_ada" | lhs == "ind_ope_sad_ada" |
           lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
@@ -220,7 +230,7 @@ model_anxiety <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_anxiety <- sem(model_anxiety, data = data, missing = "fiml",
+fit_anxiety <- sem(model_anxiety, data = data_anxiety, missing = "fiml",
               se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (Anxiety)***\n")
@@ -244,7 +254,7 @@ print(standardizedSolution(fit_anxiety, ci = FALSE))
 # Mediation model 4 (anger) ----
 model_anger <- "
   # Direct effect
-  depression_score_yeo ~ c1*extraversion + c2*agreeableness + 
+  depression_score_sqrt ~ c1*extraversion + c2*agreeableness + 
                          c3*conscientiousness + c4*neuroticism + 
                          c5*openness + c6*sex
   
@@ -255,7 +265,7 @@ model_anger <- "
   anger_adaptive_score_yeo ~ a7*extraversion + a8*agreeableness + 
                                a9*conscientiousness + a10*neuroticism +
                                a11*openness + a12*sex
-  depression_score_yeo ~ b1*anger_maladaptive_score + b2*anger_adaptive_score_yeo
+  depression_score_sqrt ~ b1*anger_maladaptive_score + b2*anger_adaptive_score_yeo
 
   # Covariance between mediators
   anger_maladaptive_score ~~ anger_adaptive_score_yeo
@@ -292,7 +302,7 @@ model_anger <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_anger <- sem(model_anger, data = data, missing = "fiml",
+fit_anger <- sem(model_anger, data = data_anger, missing = "fiml",
               se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (Anger)***\n")
@@ -303,7 +313,7 @@ print(parameterEstimates(fit_anger, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_anger <- parameterEstimates(fit_anger) |>
-  filter((lhs == "depression_score_yeo" | lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo" | 
+  filter((lhs == "depression_score_sqrt" | lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo" | 
           lhs == "ind_ext_ang_mal" | lhs == "ind_agr_ang_mal" | lhs == "ind_con_ang_mal" | lhs == "ind_neu_ang_mal" | lhs == "ind_ope_ang_mal" |
           lhs == "ind_ext_ang_ada" | lhs == "ind_agr_ang_ada" | lhs == "ind_con_ang_ada" | lhs == "ind_neu_ang_ada" | lhs == "ind_ope_ang_ada" |
           lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
@@ -449,5 +459,4 @@ adjusted_p_values <- bind_rows(
   make_adj_tbl(p_values_ang_tot_adj, "anger", "tot")
 )
 
-write_csv(adjusted_p_values, "data/analysis/mediation_adjusted_p_values.csv")
-
+write_csv(adjusted_p_values, "data/analysis/no_outliers_mediation_adjusted_p_values.csv")

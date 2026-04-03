@@ -50,7 +50,7 @@ perform_outlier_analysis <- function(model, model_name, save_plot = TRUE,
     cooks_outliers <- which(cooks_max > cooks_threshold)
     dffits_outliers <- which(dffits_abs_max > dffits_threshold)
 
-    studentized_plot_values <- apply(studentized_residuals, 1, function(x) x[which.max(abs(x))])
+    studentized_plot_values <- studentized_abs_max
     cooks_plot_values <- cooks_max
     dffits_plot_values <- dffits_abs_max
   } else {
@@ -84,14 +84,14 @@ perform_outlier_analysis <- function(model, model_name, save_plot = TRUE,
     points(leverage_outliers, leverage[leverage_outliers], pch = 16, col = "red")
 
     plot(studentized_plot_values, pch = 16, cex = 0.7, col = "grey40",
-      main = paste0(model_name, ": Studentized residuals"),
-      xlab = "Observation", ylab = "Studentized residual")
-    abline(h = c(-studentized_threshold, studentized_threshold), col = "red", lwd = 2, lty = 2)
+      main = if (is_mlm) paste0(model_name, ": max |Studentized residual|") else paste0(model_name, ": Studentized residuals"),
+      xlab = "Observation", ylab = if (is_mlm) "max |Studentized residual|" else "Studentized residual")
+    abline(h = if (is_mlm) studentized_threshold else c(-studentized_threshold, studentized_threshold), col = "red", lwd = 2, lty = 2)
     points(studentized_outliers, studentized_plot_values[studentized_outliers], pch = 16, col = "red")
 
     plot(cooks_plot_values, pch = 16, cex = 0.7, col = "grey40",
-      main = paste0(model_name, ": Cook's distance"),
-      xlab = "Observation", ylab = "Cook's distance")
+      main = if (is_mlm) paste0(model_name, ": max Cook's distance") else paste0(model_name, ": Cook's distance"),
+      xlab = "Observation", ylab = if (is_mlm) "max Cook's distance" else "Cook's distance")
     abline(h = cooks_threshold, col = "red", lwd = 2, lty = 2)
     points(cooks_outliers, cooks_plot_values[cooks_outliers], pch = 16, col = "red")
 
