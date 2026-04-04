@@ -3,6 +3,12 @@
 # This script preprocesses the HiPIC data for Wave 6.
 # It reads the raw data and prepares the dataset for analysis.
 
+# Set seed for reproducibility ----
+set.seed(123)
+
+# Set sink to capture all output in a text file ----
+sink("data/preprocessed/hipic_preproc_output.txt")
+
 # Load necessary libraries ----
 library(haven)  # For reading SPSS files
 library(jsonlite)  # For saving metadata as JSON
@@ -153,7 +159,6 @@ write.csv(preproc_w6_hipic, file = "data/preprocessed/preproc_w6_hipic.csv",
           quote = FALSE,
           row.names = FALSE)
 
-# Determine number of NaNs in each column (missing values) ----
 # Determine number of NaNs in each column (missing values) ----
 num_nans <- sapply(preproc_w6_hipic, function(x) {
   if (is.character(x)) {
@@ -316,6 +321,9 @@ print(
           n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
           title = "Openness")
 )
+
+# End sink to stop capturing output in the text file ----
+sink(file = NULL)
 
 # Distribution of HiPIC scores ----
 # By sex

@@ -2,6 +2,12 @@
 # Correlation table between HiPIC dimension,
 # FEEL-E scores, and ASR Depression scores (preregistration version)
 
+# Set seed for reproducibility ----
+set.seed(123)
+
+# Set sink to capture all output in a text file ----
+sink("data/analysis/corr_table_output.txt")
+
 # Load necessary libraries ----
 library(tidyverse)
 library(GGally)
@@ -151,17 +157,38 @@ invisible(lapply(names(adjusted_pvalue_matrices), function(ctx) {
             paste0("data/analysis/correlation_pvalues_adjusted_", ctx, ".csv"))
 }))
 
+# End sink to stop capturing output in the text file ----
+sink(file = NULL)
+
 # Visualize correlation matrices with significance annotations ----
 # We can use ggcorrplot for this purpose
 invisible(lapply(names(contexts), function(ctx) {
   vars <- contexts[[ctx]]
   corr_submat <- cor_matrix[vars, vars, drop = FALSE]
   p_adj_submat <- adjusted_pvalue_matrices[[ctx]]
+
+  idx <- which(upper.tri(corr_submat, diag = FALSE), arr.ind = TRUE)
+  stars <- dplyr::case_when(
+    p_adj_submat[idx] <= 0.001 ~ "***",
+    p_adj_submat[idx] <= 0.01  ~ "**",
+    p_adj_submat[idx] <= 0.05  ~ "*",
+    TRUE                       ~ ""
+  )
+
+  label_tbl <- tibble(
+    Var1 = rownames(corr_submat)[idx[, 1]],
+    Var2 = colnames(corr_submat)[idx[, 2]],
+    label = paste0(sprintf("%.2f", corr_submat[idx]), stars)
+  )
+
   p <- ggcorrplot(corr_submat, method = "square",
-                  type = "upper", lab = TRUE,
-                  p.mat = p_adj_submat, sig.level = 0.05,
-                  insig = "pch", outline.color = "white",
+                  type = "upper", lab = FALSE,
+                  outline.color = "white",
                   colors = c("#1100ff", "white", "#ff0000")) +
+    geom_text(data = label_tbl,
+              aes(x = Var1, y = Var2, label = label),
+              inherit.aes = FALSE,
+              size = 3) +
     ggtitle(paste("Correlation Matrix -", ctx)) +
     labs(y = "Variables", x = "Variables") +
     scale_y_discrete(labels = function(x) stringr::str_wrap(stringr::str_replace_all(x, "_", " "), width = 10)) +

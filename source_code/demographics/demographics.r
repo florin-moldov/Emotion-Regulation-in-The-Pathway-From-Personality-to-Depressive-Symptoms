@@ -604,6 +604,51 @@ demo_vars <- c("sex", "fulltime_edu", "parttime_edu",
                "highest_edu", "employment_status")
 waves <- c("W6", "W10", "W11")
 
+# Build code -> label maps for highest_edu so levels are aligned by meaning
+extract_code_to_label <- function(meta, var_name) {
+  idx <- which(vapply(meta, function(x) x$variable == var_name, logical(1)))
+  if (length(idx) == 0) return(character())
+  value_labels <- meta[[idx[1]]]$value_labels
+  if (is.null(value_labels) || length(value_labels) == 0) return(character())
+  setNames(names(value_labels), as.character(unlist(value_labels)))
+}
+
+meta_w6 <- fromJSON("data/preprocessed/preproc_w6_demographics_metadata.json",
+                    simplifyVector = FALSE)
+meta_w11 <- fromJSON("data/preprocessed/preproc_w11_demographics_metadata.json",
+                     simplifyVector = FALSE)
+
+highest_edu_map_w6 <- extract_code_to_label(meta_w6, "W6_schoolniveau")
+# W10 highest_edu (IEDU7) corresponds conceptually to W11 HighestDegree.
+highest_edu_map_w10_w11 <- extract_code_to_label(meta_w11, "HighestDegree")
+
+highest_edu_reference_levels <- {
+  w6_levels <- highest_edu_map_w6[order(as.numeric(names(highest_edu_map_w6)))]
+  w10_w11_levels <- highest_edu_map_w10_w11[
+    order(as.numeric(names(highest_edu_map_w10_w11)))
+  ]
+  unique(c(unname(w6_levels), unname(w10_w11_levels)))
+}
+
+harmonize_highest_edu <- function(level, wave) {
+  level_chr <- as.character(level)
+
+  mapped_w6 <- ifelse(
+    wave == "W6",
+    unname(highest_edu_map_w6[level_chr]),
+    NA_character_
+  )
+
+  mapped_w10_w11 <- ifelse(
+    wave %in% c("W10", "W11"),
+    unname(highest_edu_map_w10_w11[level_chr]),
+    NA_character_
+  )
+
+  mapped <- dplyr::coalesce(mapped_w6, mapped_w10_w11)
+  dplyr::coalesce(mapped, level_chr)
+}
+
 # Helper: ensure all variables exist in each wave dataset
 add_missing_cols <- function(df, cols) {
   missing_cols <- setdiff(cols, names(df))
@@ -612,31 +657,6 @@ add_missing_cols <- function(df, cols) {
   }
   df
 }
-
-# Reference levels from W10 (display once / stable order)
-ref_levels <- lapply(demo_vars, function(v) {
-  vals <- safe_demographics_w10[[v]]
-  levels(droplevels(factor(as.character(vals))))
-})
-names(ref_levels) <- demo_vars
-
-# Fix ordering for highest_edu: 1,2,3,... instead of 1,10,11,...
-edu_vals <- as.character(safe_demographics_w10$highest_edu)
-edu_vals <- edu_vals[!is.na(edu_vals) & trimws(edu_vals) != ""]
-
-# numeric-aware ordering
-ref_levels[["highest_edu"]] <- edu_vals |>
-  unique() |>
-  (\(x) x[order(as.numeric(x))])()
-
-# Build a reference table: variable-level order (+ Missing)
-ref_tbl <- bind_rows(lapply(demo_vars, function(v) {
-  tibble(
-    variable = v,
-    level = c(ref_levels[[v]], "Missing"),
-    level_order = seq_along(c(ref_levels[[v]], "Missing"))
-  )
-}))
 
 # Stack all waves
 all_demo <- bind_rows(
@@ -648,13 +668,40 @@ all_demo <- bind_rows(
   pivot_longer(cols = all_of(demo_vars), names_to = "variable", values_to = "level") |>
   mutate(
     level = as.character(level),
+    level = if_else(variable == "highest_edu",
+                    harmonize_highest_edu(level, wave),
+                    level),
     level = if_else(is.na(level) | trimws(level) == "", "Missing", level),
-    # Keep only W10 reference levels per variable; everything else -> Missing
-    level = if_else(
-      mapply(function(lv, var) lv %in% ref_levels[[var]], level, variable),
-      level, "Missing"
-    )
+    level = if_else(trimws(level) == "", "Missing", level)
   )
+
+# Reference levels from all waves after harmonization
+collect_levels <- function(var_name) {
+  vals <- all_demo |>
+    filter(variable == var_name, level != "Missing") |>
+    pull(level)
+
+  vals <- vals[!is.na(vals) & trimws(vals) != ""]
+  vals <- unique(vals)
+
+  if (length(vals) > 0 && all(grepl("^-?[0-9]+(\\.[0-9]+)?$", vals))) {
+    vals <- vals[order(as.numeric(vals))]
+  }
+
+  vals
+}
+
+ref_levels <- setNames(lapply(demo_vars, collect_levels), demo_vars)
+ref_levels[["highest_edu"]] <- highest_edu_reference_levels
+
+# Build a reference table: variable-level order (+ Missing)
+ref_tbl <- bind_rows(lapply(demo_vars, function(v) {
+  tibble(
+    variable = v,
+    level = c(ref_levels[[v]], "Missing"),
+    level_order = seq_along(c(ref_levels[[v]], "Missing"))
+  )
+}))
 
 # Percentages per wave and variable:
 # - non-missing levels: denominator = non-missing N

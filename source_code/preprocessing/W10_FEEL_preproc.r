@@ -3,6 +3,12 @@
 # This script preprocesses the FEEL-E data for Wave 10.
 # It reads the raw data and prepares the dataset for analysis.
 
+# Set seed for reproducibility ----
+set.seed(123)
+
+# Set sink to capture all output in a text file ----
+sink("data/preprocessed/feel_preproc_output.txt")
+
 # Load necessary libraries ----
 library(haven)  # For reading SPSS files
 library(jsonlite)  # For saving metadata as JSON
@@ -291,6 +297,9 @@ print(
     alpha(n.iter = 10000,
           title = "General Maladaptive Scale")
 )
+
+# End sink to stop capturing output in the text file ----
+sink(file = NULL)
 
 # Distribution of FEEL-E scores ----
 # By sex
