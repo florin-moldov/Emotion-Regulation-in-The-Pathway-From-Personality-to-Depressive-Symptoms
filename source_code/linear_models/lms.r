@@ -109,7 +109,7 @@ model_h1 <- "
                          conscientiousness + neuroticism + openness + sex
 "
 fit_h1 <- sem(model_h1, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H1***\n")
 print(summary(fit_h1, standardized = FALSE, fit.measures = TRUE))
@@ -161,7 +161,7 @@ model_h2_general <- "
   depression_score_yeo ~ maladaptive_score + adaptive_score + sex
 "
 fit_h2_general <- sem(model_h2_general, data = data, missing = "fiml",
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H2 (General Emotion)***\n")
 print(summary(fit_h2_general, standardized = FALSE, fit.measures = TRUE))
@@ -212,7 +212,7 @@ model_h2_sadness <- "
   depression_score_yeo ~ sadness_maladaptive_score + sadness_adaptive_score + sex
 "
 fit_h2_sadness <- sem(model_h2_sadness, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H2 (Sadness-specific Emotion)***\n")
 print(summary(fit_h2_sadness, standardized = FALSE, fit.measures = TRUE))
@@ -257,7 +257,7 @@ model_h2_anxiety <- '
   depression_score_yeo ~ anxiety_maladaptive_score + anxiety_adaptive_score + sex
 '
 fit_h2_anxiety <- sem(model_h2_anxiety, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H2 (Anxiety-specific Emotion)***\n")
 print(summary(fit_h2_anxiety, standardized = FALSE, fit.measures = TRUE))
@@ -302,7 +302,7 @@ model_h2_anger <- '
   depression_score_yeo ~ anger_maladaptive_score + anger_adaptive_score + sex
 '
 fit_h2_anger <- sem(model_h2_anger, data = data, missing = "fiml", 
-                     se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                     se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H2 (Anger-specific Emotion)***\n")
 print(summary(fit_h2_anger, standardized = FALSE, fit.measures = TRUE))
@@ -372,7 +372,7 @@ model_h3_general <- '
     adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
 fit_h3_general <- sem(model_h3_general, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H3 (General Emotion)***\n")
 print(summary(fit_h3_general, standardized = FALSE, fit.measures = TRUE))
@@ -441,7 +441,7 @@ model_h3_sad <- '
     sadness_adaptive_score_ord ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
 fit_h3_sad <- sem(model_h3_sad, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H3 (Sadness-specific Emotion)***\n")
 print(summary(fit_h3_sad, standardized = FALSE, fit.measures = TRUE))
@@ -510,7 +510,7 @@ model_h3_anx <- '
     anxiety_adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
 fit_h3_anx <- sem(model_h3_anx, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H3 (Anxiety-specific Emotion)***\n")
 print(summary(fit_h3_anx, standardized = FALSE, fit.measures = TRUE))
@@ -578,7 +578,7 @@ model_h3_ang <- '
     anger_adaptive_score_yeo ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
 fit_h3_ang <- sem(model_h3_ang, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H3 (Anger-specific Emotion)***\n")
 print(summary(fit_h3_ang, standardized = FALSE, fit.measures = TRUE))

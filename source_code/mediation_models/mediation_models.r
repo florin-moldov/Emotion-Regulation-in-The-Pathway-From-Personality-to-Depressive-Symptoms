@@ -77,7 +77,7 @@ model_general <- "
 "
 
 fit_general <- sem(model_general, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (General)***\n")
 print(summary(fit_general, standardized = FALSE, fit.measures = TRUE))
@@ -149,7 +149,7 @@ model_sadness <- "
 "
 
 fit_sadness <- sem(model_sadness, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (Sadness)***\n")
 print(summary(fit_sadness, standardized = FALSE, fit.measures = TRUE))
@@ -221,7 +221,7 @@ model_anxiety <- "
 "
 
 fit_anxiety <- sem(model_anxiety, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (Anxiety)***\n")
 print(summary(fit_anxiety, standardized = FALSE, fit.measures = TRUE))
@@ -293,7 +293,7 @@ model_anger <- "
 "
 
 fit_anger <- sem(model_anger, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 100, fixed.x = FALSE)
+              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model (Anger)***\n")
 print(summary(fit_anger, standardized = FALSE, fit.measures = TRUE))
