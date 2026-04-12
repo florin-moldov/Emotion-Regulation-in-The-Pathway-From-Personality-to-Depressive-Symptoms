@@ -339,7 +339,7 @@ svg("reports/plots/lm_diagnostics/check_model_h3_ad_general_untransformed.svg", 
 print(check_model(fit_h3_ad_gen_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h3_ad_gen_check)) # not OK
-print(check_heteroscedasticity(fit_h3_ad_gen_check)) # not OK
+print(check_heteroscedasticity(fit_h3_ad_gen_check)) # OK
 
 # Given violation of residual normality, determine best transformation
 # method for adaptive_score (outcome variable)
@@ -362,7 +362,7 @@ svg("reports/plots/lm_diagnostics/check_model_h3_ad_general_transformed.svg", wi
 print(check_model(fit_h3_ad_gen_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h3_ad_gen_check_transformed)) # still not OK, but above plots look way way better than before
-print(check_heteroscedasticity(fit_h3_ad_gen_check_transformed)) # now OK   
+print(check_heteroscedasticity(fit_h3_ad_gen_check_transformed)) # still OK   
 
 # Now we can fit the multivariate lavaan model 
 model_h3_general <- '
@@ -486,7 +486,7 @@ non_missing_idx <- !is.na(data$anxiety_adaptive_score)
 # Fit on non-missing values only
 bn_ada_anx <- bestNormalize(data$anxiety_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_anx)
-# Box-Cox transformation with lambda = 1.9214122 is the best transformation
+# Box-Cox transformation with lambda = 1.914122 is the best transformation
 # Initialize and assign with length-matched predictions
 data$anxiety_adaptive_score_box <- NA_real_
 data$anxiety_adaptive_score_box[non_missing_idx] <- as.numeric(
@@ -499,7 +499,7 @@ fit_h3_ad_anx_check_transformed <- lm(anxiety_adaptive_score_box ~  extraversion
 svg("reports/plots/lm_diagnostics/check_model_h3_ad_anxiety_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_anx_check_transformed)) # looks better
 dev.off()
-print(check_normality(fit_h3_ad_anx_check_transformed)) # still not OK, but above plots look way way better than before
+print(check_normality(fit_h3_ad_anx_check_transformed)) # now OK
 print(check_heteroscedasticity(fit_h3_ad_anx_check_transformed)) # now OK  
 
 # Now we can fit the multivariate lavaan model 

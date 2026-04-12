@@ -95,7 +95,7 @@ non_missing_idx <- !is.na(data_h1_no_outliers$depression_score)
 # Fit on non-missing values only
 bn_dep <- bestNormalize(data_h1_no_outliers$depression_score[non_missing_idx], r = 100)
 print(bn_dep)
-# Yeo-Johnson transformation with lambda = -1.411034 is the best transformation
+# Yeo-Johnson transformation with lambda = -1.426511 is the best transformation
 # Initialize and assign with length-matched predictions
 data_h1_no_outliers$depression_score_yeo <- NA_real_
 data_h1_no_outliers$depression_score_yeo[non_missing_idx] <- as.numeric(
@@ -183,7 +183,6 @@ svg("reports/plots/lm_diagnostics/no_outliers_check_model_h2_general_transformed
 print(check_model(fit_h2_general_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h2_general_check_transformed)) # now OK
-# but above plots look way way better than before
 print(check_heteroscedasticity(fit_h2_general_check_transformed)) # now OK
 
 # Now we can fit the lavaan model with the transformed outcome variable
@@ -445,7 +444,7 @@ non_missing_idx <- !is.na(data_h3_gen_no_outliers$adaptive_score)
 # Fit on non-missing values only
 bn_ada <- bestNormalize(data_h3_gen_no_outliers$adaptive_score[non_missing_idx], r = 100)
 print(bn_ada)
-# Yeo-Johnson transformation with lambda = 2.495135 is the best transformation
+# Yeo-Johnson transformation with lambda = 2.360003 is the best transformation
 # Initialize and assign with length-matched predictions
 data_h3_gen_no_outliers$adaptive_score_yeo <- NA_real_
 data_h3_gen_no_outliers$adaptive_score_yeo[non_missing_idx] <- as.numeric(
@@ -509,7 +508,7 @@ print(check_heteroscedasticity(fit_h3_mal_sad_check)) # OK
 
 fit_h3_ad_sad_check <- lm(sadness_adaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_sadness_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/no_outliers_check_model_h3_ad_sadness_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_sad_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h3_ad_sad_check)) # not OK
@@ -522,7 +521,7 @@ non_missing_idx <- !is.na(data_h3_sad_no_outliers$sadness_adaptive_score)
 # Fit on non-missing values only
 bn_ada_sad <- bestNormalize(data_h3_sad_no_outliers$sadness_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_sad)
-# Box-Cox transformation with lambda = 1.875455 is the best transformation
+# Box-Cox transformation with lambda = 1.999933 is the best transformation
 # Initialize and assign with length-matched predictions
 data_h3_sad_no_outliers$sadness_adaptive_score_box <- NA_real_
 data_h3_sad_no_outliers$sadness_adaptive_score_box[non_missing_idx] <- as.numeric(
@@ -535,7 +534,7 @@ fit_h3_ad_sad_check_transformed <- lm(sadness_adaptive_score_box ~  extraversion
 svg("reports/plots/lm_diagnostics/no_outliers_check_model_h3_ad_sadness_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_sad_check_transformed)) # looks better
 dev.off()
-print(check_normality(fit_h3_ad_sad_check_transformed)) # now OK
+print(check_normality(fit_h3_ad_sad_check_transformed)) # still not OK, but above plots look better
 print(check_heteroscedasticity(fit_h3_ad_sad_check_transformed)) # now OK 
 
 # Now we can fit the multivariate lavaan model 
@@ -590,7 +589,7 @@ svg("reports/plots/lm_diagnostics/no_outliers_check_model_h3_ad_anxiety_untransf
 print(check_model(fit_h3_ad_anx_check)) # not that good plots
 dev.off()
 print(check_normality(fit_h3_ad_anx_check)) # not OK
-print(check_heteroscedasticity(fit_h3_ad_anx_check)) # not OK
+print(check_heteroscedasticity(fit_h3_ad_anx_check)) # OK
 
 # Given violation of residual normality and heteroscedasticity, determine best transformation
 # method for anxiety_adaptive_score (outcome variable)
@@ -599,7 +598,7 @@ non_missing_idx <- !is.na(data_h3_anx_no_outliers$anxiety_adaptive_score)
 # Fit on non-missing values only
 bn_ada_anx <- bestNormalize(data_h3_anx_no_outliers$anxiety_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_anx)
-# Box-Cox transformation with lambda = 1.949752 is the best transformation
+# Box-Cox transformation with lambda = 1.999942 is the best transformation
 # Initialize and assign with length-matched predictions
 data_h3_anx_no_outliers$anxiety_adaptive_score_box <- NA_real_
 data_h3_anx_no_outliers$anxiety_adaptive_score_box[non_missing_idx] <- as.numeric(
@@ -674,7 +673,7 @@ non_missing_idx <- !is.na(data_h3_ang_no_outliers$anger_adaptive_score)
 # Fit on non-missing values only
 bn_ada_ang <- bestNormalize(data_h3_ang_no_outliers$anger_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_ang)
-# Yeo-Johnson transformation with lambda = 2.663064 is the best transformation
+# Yeo-Johnson transformation with lambda = 2.483021 is the best transformation
 # Initialize and assign with length-matched predictions
 data_h3_ang_no_outliers$anger_adaptive_score_yeo <- NA_real_
 data_h3_ang_no_outliers$anger_adaptive_score_yeo[non_missing_idx] <- as.numeric(

@@ -48,6 +48,40 @@ cat("Number of rows after merge:", nrow(merged_data), "\n")
 # Save merged data for future use
 write_csv(merged_data, "data/merged/merged_data.csv")
 
+# Descriptive statistics ----
+# Ofc, only for non-missing values, so we set na.rm = TRUE
+# vector of columns to summarize
+cols <- colnames(merged_data)[-1]  # exclude ID
+desc_stats <- merged_data |>
+  summarise(
+    across(
+      all_of(cols),
+      list(
+        mean = ~ mean(.x, na.rm = TRUE),
+        median = ~ median(.x, na.rm = TRUE),
+        sd = ~ sd(.x, na.rm = TRUE),
+        min = ~ min(.x, na.rm = TRUE),
+        max = ~ max(.x, na.rm = TRUE),
+        n = ~ sum(!is.na(.x)),
+        missing = ~ sum(is.na(.x))
+      ),
+      .names = "{.col}_{.fn}"   # dimension_stat
+    )
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = c("dimension", "stat"),
+    names_pattern = "^(.+)_(.+)$",
+    values_to = "value"
+  ) |>
+  pivot_wider(names_from = stat, values_from = value) |>
+  mutate(dimension = factor(dimension, levels = cols))
+
+print(desc_stats)
+
+# Save the tidy table
+write_csv(desc_stats, "data/descriptives/merged_stats.csv")
+
 # Visualize relationships with pairwise scatterplots ----
 # As initial exploration
 # We can use ggpairs for a quick overview
