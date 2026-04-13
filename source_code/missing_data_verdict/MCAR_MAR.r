@@ -17,7 +17,9 @@ library(naniar)
 data <- read_csv("data/merged/merged_data_with_gender.csv")
 
 # Perform MCAR test ----
-result <- mcar_test(data) # p-value is 0.04!! so we reject 
+result <- mcar_test(data) 
+print(result)
+# p-value is 0.04!! so we reject 
 # the null hypothesis of MCAR, but the p-value is close to 0.05, 
 # so we cannot be sure that the data is not MCAR. SO, still
 # need to perform a logistic regression like specified in our 
