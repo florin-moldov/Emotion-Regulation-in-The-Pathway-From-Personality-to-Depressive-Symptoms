@@ -196,22 +196,11 @@ extraversion_items <- c("HiP6A1", "HiP6A19", "HiP6A37",
                         "HiP6A15", "HiP6A33", "HiP6A51",
                         "HiP6A69", "HiP6A87", "HiP6A105",
                         "HiP6A123", "HiP6A141")
-extraversion_items_reverse <- c(1, -1, 1,
-                                1, -1, -1,
-                                -1, -1, 1,
-                                1, -1, -1,
-                                1, 1, 1,
-                                1, 1, 1,
-                                1, 1, 1,
-                                1, 1, 1,
-                                1, 1, 1,
-                                1, -1, 1,
-                                1, 1) # -1 for reversed items
+
 print(
   preproc_w6_hipic |>
     select(all_of(extraversion_items)) |>
-    alpha(keys = extraversion_items_reverse,
-          n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
+    alpha(n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
           title = "Extraversion")
 )
 
@@ -230,25 +219,11 @@ agreeableness_items <- c("HiP6A2", "HiP6A20", "HiP6A38",
                          "HiP6A36", "HiP6A54", "HiP6A72",
                          "HiP6A90", "HiP6A108", "HiP6A126",
                          "HiP6A144")
-agreeableness_items_reverse <- c(-1, 1, -1,
-                                 -1, -1, -1,
-                                 1, -1, -1,
-                                 -1, -1, -1,
-                                 1, -1, -1,
-                                 -1, 1, 1,
-                                 1, 1, -1,
-                                 1, -1, -1,
-                                 1, -1, -1,
-                                 -1, -1, -1,
-                                 1, -1, 1,
-                                 1, 1, 1,
-                                 1, 1, 1,
-                                 1) # -1 for reversed items
+
 print(
   preproc_w6_hipic |>
     select(all_of(agreeableness_items)) |>
-    alpha(keys = agreeableness_items_reverse,
-          n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
+    alpha(n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
           title = "Agreeableness")
 )
 
@@ -264,22 +239,11 @@ conscientiousness_items <- c("HiP6A3", "HiP6A21", "HiP6A39",
                              "HiP6A17", "HiP6A35", "HiP6A53",
                              "HiP6A71", "HiP6A89", "HiP6A107",
                              "HiP6A125", "HiP6A143")
-conscientiousness_items_reverse <- c(1, 1, 1,
-                                     1, 1, 1,
-                                     1, -1, -1,
-                                     1, -1, -1,
-                                     -1, 1, 1,
-                                     1, 1, 1,
-                                     -1, 1, 1,
-                                     -1, -1, -1,
-                                     -1, -1, -1,
-                                     1, -1, -1,
-                                     1, -1) # -1 for reversed items
+
 print(
   preproc_w6_hipic |>
     select(all_of(conscientiousness_items)) |>
-    alpha(keys = conscientiousness_items_reverse,
-          n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
+    alpha(n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
           title = "Conscientiousness")
 )
 
@@ -290,17 +254,11 @@ neuroticism_items <- c("HiP6A4", "HiP6A22", "HiP6A40",
                        "HiP6A27", "HiP6A45", "HiP6A63",
                        "HiP6A81", "HiP6A99", "HiP6A117",
                        "HiP6A135")
-neuroticism_items_reverse <- c(-1, -1, -1,
-                               -1, -1, -1,
-                               -1, -1, 1,
-                               -1, 1, -1,
-                               1, -1, 1,
-                               1) # -1 for reversed items
+
 print(
   preproc_w6_hipic |>
     select(all_of(neuroticism_items)) |>
-    alpha(keys = neuroticism_items_reverse,
-          n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
+    alpha(n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
           title = "Neuroticism")
 )
 openness_items <- c("HiP6A5", "HiP6A23", "HiP6A41",
@@ -311,19 +269,11 @@ openness_items <- c("HiP6A5", "HiP6A23", "HiP6A41",
                     "HiP6A136", "HiP6A14", "HiP6A32",
                     "HiP6A50", "HiP6A68", "HiP6A86",
                     "HiP6A104", "HiP6A122", "HiP6A140")
-openness_items_reverse <- c(-1, 1, -1,
-                            1, 1, 1,
-                            1, 1, 1,
-                            1, 1, 1,
-                            1, 1, 1,
-                            1, 1, 1,
-                            -1, 1, 1,
-                            1, -1, 1) # -1 for reversed items
+
 print(
   preproc_w6_hipic |>
     select(all_of(openness_items)) |>
-    alpha(keys = openness_items_reverse,
-          n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
+    alpha(n.iter = 10000, # bootstrap confidence intervals with 10000 iterations
           title = "Openness")
 )
 
