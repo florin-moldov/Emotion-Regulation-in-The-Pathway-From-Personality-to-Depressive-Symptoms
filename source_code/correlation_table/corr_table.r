@@ -39,8 +39,10 @@ merged_data <- w6_hipic |>
               select(ID, depression_score), by = "ID")
 
 # Delete those with empty IDs (identified in demographics.r)
+# We also ensure that all variables are numeric for correlation analysis
 merged_data <- merged_data |> 
-                filter(!is.na(ID))
+                filter(!is.na(ID)) |>
+                mutate(across(-ID, as.numeric))
 
 # Check nrows after merge
 cat("Number of rows after merge:", nrow(merged_data), "\n")
@@ -118,10 +120,19 @@ for (var in names(numeric_vars)) {
 # use Spearman's rank correlation for all variables.
 
 # Compute correlation matrix ----
-corr_results <- merged_data |>
+# Prepare numeric data for correlation (exclude ID, ensure numeric)
+corr_input <- merged_data |>
   select(-ID) |>
-  # no p-value adjustment here, we'll do it separately by context
-  corr.test(method = "spearman", use = "complete", adjust = "none")
+  as.data.frame()
+
+# Perform Spearman correlation with pairwise complete observations
+corr_results <- corr.test(
+  corr_input,
+  method = "spearman",
+  use = "complete",
+  adjust = "none",
+  normal = FALSE
+)
 
 cor_matrix <- corr_results$r
 pvalue_matrix <- corr_results$p

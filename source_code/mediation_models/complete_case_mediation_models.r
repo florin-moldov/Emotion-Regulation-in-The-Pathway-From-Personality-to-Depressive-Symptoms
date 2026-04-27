@@ -1,4 +1,4 @@
-# Mediation models per emotion regulation context with FIML and bootstrap standard errors and confidence intervals
+# Mediation models per emotion regulation context with complete cases only, bootstrap standard errors and confidence intervals
 #
 # This script tests the fourth preregistered hypothesis by fitting mediation models for 
 # each emotion regulation context (general, sadness, anxiety, anger) 
@@ -20,10 +20,10 @@ library(tidyverse)
 library(lavaan)
 
 # Load the extended data with transformations ----
-data <- read_csv("data/analysis/extended_data_with_transformations.csv")
+data <- read_csv("data/analysis/complete_cases_extended_data_with_transformations.csv")
 
 # Set sink to capture all output in a text file ----
-sink("data/analysis/mediation_output.txt")
+sink("data/analysis/complete_cases_mediation_output.txt")
 
 # Mediation model 1 (general) ----
 model_general <- "
@@ -76,8 +76,8 @@ model_general <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_general <- sem(model_general, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_general <- sem(model_general, data = data,
+              se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model (General)***\n")
 print(summary(fit_general, standardized = FALSE, fit.measures = TRUE))
@@ -148,8 +148,8 @@ model_sadness <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_sadness <- sem(model_sadness, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_sadness <- sem(model_sadness, data = data,
+              se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model (Sadness)***\n")
 print(summary(fit_sadness, standardized = FALSE, fit.measures = TRUE))
@@ -220,8 +220,8 @@ model_anxiety <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_anxiety <- sem(model_anxiety, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_anxiety <- sem(model_anxiety, data = data,
+              se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model (Anxiety)***\n")
 print(summary(fit_anxiety, standardized = FALSE, fit.measures = TRUE))
@@ -292,8 +292,8 @@ model_anger <- "
     tot_sex := c6 + ind_sex
 "
 
-fit_anger <- sem(model_anger, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_anger <- sem(model_anger, data = data,
+              se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model (Anger)***\n")
 print(summary(fit_anger, standardized = FALSE, fit.measures = TRUE))
@@ -449,5 +449,4 @@ adjusted_p_values <- bind_rows(
   make_adj_tbl(p_values_ang_tot_adj, "anger", "tot")
 )
 
-write_csv(adjusted_p_values, "data/analysis/mediation_adjusted_p_values.csv")
-
+write_csv(adjusted_p_values, "data/analysis/complete_cases_mediation_adjusted_p_values.csv")

@@ -3,6 +3,12 @@
 # This script preprocesses the CBCL data for Wave 6.
 # It reads the raw data and prepares the dataset for analysis.
 
+# Set seed for reproducibility ----
+set.seed(123)
+
+# Set sink to capture all output in a text file ----
+sink("data/preprocessed/cbcl_preproc_output.txt")
+
 # Load necessary libraries ----
 library(haven)  # For reading SPSS files
 library(jsonlite)  # For saving metadata as JSON
@@ -26,7 +32,7 @@ preproc_w6_cbcl <- raw_w6_cbcl |>
          CBCL6A75, CBCL6A89, CBCL6A91, CBCL6A102,
          CBCL6A103, CBCL6A111, CBCL6A112) |>
   mutate(
-    CBCL6A_internalizing = rowMeans(across(-ID), na.rm = FALSE)
+    internalizing = rowMeans(across(-ID), na.rm = FALSE)
   )
 
 # Display the structure of the preprocessed dataset ----
@@ -58,7 +64,7 @@ write.csv(preproc_w6_cbcl, file = "data/preprocessed/preproc_w6_cbcl.csv",
 # Descriptive statistics for the average internalizing scores ----
 # Ofc, only for non-missing values, so we set na.rm = TRUE
 # vector of dimension column names (as created in preproc)
-dims <- c("CBCL6A_internalizing")
+dims <- c("internalizing")
 
 cbcl_stats <- preproc_w6_cbcl |>
   summarise(
@@ -100,7 +106,6 @@ write.csv(preproc_w6_cbcl, file = "data/preprocessed/preproc_w6_cbcl.csv",
           row.names = FALSE)
 
 # Determine number of NaNs in each column (missing values) ----
-# Determine number of NaNs in each column (missing values) ----
 num_nans <- sapply(preproc_w6_cbcl, function(x) {
   if (is.character(x)) {
     sum(is.na(x) | trimws(x) == "")
@@ -124,10 +129,12 @@ cat("Total number of NaNs:", sum(num_nans), "\n") # 189 missing values in total
 # Psychometric properties ----
 print(
   preproc_w6_cbcl |>
-    select(starts_with("CBCL6A")) |>
-    select(-CBCL6A_internalizing) |>
+    select(starts_with("CBCL6A")) |> # only the individual items, not the average score
     alpha(n.iter = 10000) # bootstrap confidence intervals with 10000 iterations
 )
+
+# End sink to stop capturing output in the text file ----
+sink(file = NULL)
 
 # Distribution of the average internalizing scores ----
 # By sex
@@ -151,16 +158,16 @@ code_to_label <- setNames(
 cbcl6a_internalizing_sex_plot <- ggplot() +
   # sex-specific densities (fill + colored outline)
   geom_density(
-    data = filter(preproc_w6_cbcl, !is.na(sex) & !is.na(CBCL6A_internalizing)),
-    mapping = aes(x = CBCL6A_internalizing,
+    data = filter(preproc_w6_cbcl, !is.na(sex) & !is.na(internalizing)),
+    mapping = aes(x = internalizing,
                   fill = factor(sex), color = factor(sex)),
     alpha = 0.35, show.legend = TRUE
   ) +
   # overall density (dashed black), map a constant linetype
   # so it appears in legend
   geom_density(
-    data = filter(preproc_w6_cbcl, !is.na(CBCL6A_internalizing)),
-    mapping = aes(x = CBCL6A_internalizing, linetype = "Overall"),
+    data = filter(preproc_w6_cbcl, !is.na(internalizing)),
+    mapping = aes(x = internalizing, linetype = "Overall"),
     color = "black", show.legend = TRUE
   ) +
   # replace "1"/"2" with labels

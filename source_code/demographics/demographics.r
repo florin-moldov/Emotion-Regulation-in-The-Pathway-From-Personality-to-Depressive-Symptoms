@@ -11,6 +11,75 @@ library(haven)  # For reading SPSS files
 library(jsonlite) # For writing JSON files
 library(tidyverse) # For data manipulation and visualization
 
+# W6 demographics preprocessing ----
+# Read descriptives for W6
+demographics_w6 <- read_sav("data/raw/W6_Gezinsgegevens.sav")
+
+# Simplify metadata before opening viewer (because
+# otherwise viewer might crash due to too much metadata)
+safe_demographics_w6 <- as.data.frame(demographics_w6)
+safe_demographics_w6[] <- lapply(safe_demographics_w6, haven::zap_labels)
+
+# Display the structure of the safe dataset
+str(safe_demographics_w6)
+
+# Select the relevant columns, convert to factors, and rename
+safe_demographics_w6 <- safe_demographics_w6 |>
+  select(ID, W6_schoolniveau) |>
+  mutate(
+    ID = trimws(as.character(ID)),
+    W6_schoolniveau = factor(W6_schoolniveau)
+  ) |>
+  rename(
+    highest_edu = W6_schoolniveau
+  )
+
+# Add gender information from one of early waves to W6 demographics dataset by merging on ID
+early_wave_gender_info <- read.csv("data/raw/basic_demo_early_waves.csv", sep = ";") |>
+  select(id, Gender_child) |>
+  mutate(
+    ID = trimws(as.character(id)),
+    sex = factor(Gender_child)
+  )
+
+safe_demographics_w6 <- safe_demographics_w6 |>
+  left_join(early_wave_gender_info |> select(ID, sex), by = "ID")
+
+# Save the metadata (variable labels and value labels) to a JSON file
+meta <- lapply(names(demographics_w6), function(nm) {
+  x <- demographics_w6[[nm]]
+  list(
+    variable = nm,
+    variable_label = attr(x, "label"),
+    value_labels = as.list(attr(x, "labels"))
+  )
+})
+write_json(meta, "data/preprocessed/preproc_w6_demographics_metadata.json",
+           pretty = TRUE, auto_unbox = TRUE)
+
+# Check for missing values in the safe dataset
+# Determine number of NaNs in each column (missing values) ----
+num_nans <- sapply(safe_demographics_w6, function(x) {
+  if (is.character(x)) {
+    sum(is.na(x) | trimws(x) == "")
+  } else if (is.factor(x)) {
+    x_chr <- as.character(x)
+    sum(is.na(x_chr) | trimws(x_chr) == "")
+  } else {
+    sum(is.na(x))
+  }
+})
+cat("Number of NaNs in each column:\n")
+print(num_nans)
+cat("Total number of NaNs:", sum(num_nans), "\n") # 5 missing values in total
+# (5 for highest_edu, 0 for sex)
+
+# Save the safe dataset for future use
+write.csv(safe_demographics_w6,
+            file = "data/preprocessed/preproc_w6_demographics.csv",
+            quote = FALSE, 
+            row.names = FALSE)
+
 # W10 demographics preprocessing ----
 # First, need to extract the relevant columns
 # from the W10_FEEL+demo.sav file (based on the questionnaire file)
@@ -73,76 +142,14 @@ num_nans <- sapply(safe_demographics_w10, function(x) {
 })
 cat("Number of NaNs in each column:\n")
 print(num_nans)
-cat("Total number of NaNs:", sum(num_nans), "\n") # 44 missing values in total
+cat("Total number of NaNs:", sum(num_nans), "\n") # 413 missing values in total
 # (10 for parttime_edu, 1 for highest_edu, 1 for employment_status,
-# 32 for biological_sex)
+# 32 for biological_sex, 369 for highest_edu_text, 0 for sex)
 
 # Save the safe dataset for future use
 write.csv(safe_demographics_w10,
             file = "data/preprocessed/preproc_w10_demographics.csv",
             quote = FALSE,
-            row.names = FALSE)
-
-# W6 demographics preprocessing ----
-# Read descriptives for W6
-demographics_w6 <- read_sav("data/raw/W6_Gezinsgegevens.sav")
-
-# Simplify metadata before opening viewer (because
-# otherwise viewer might crash due to too much metadata)
-safe_demographics_w6 <- as.data.frame(demographics_w6)
-safe_demographics_w6[] <- lapply(safe_demographics_w6, haven::zap_labels)
-
-# Display the structure of the safe dataset
-str(safe_demographics_w6)
-
-# Select the relevant columns, convert to factors, and rename
-safe_demographics_w6 <- safe_demographics_w6 |>
-  select(ID, W6_schoolniveau) |>
-  mutate(
-    ID = trimws(as.character(ID)),
-    W6_schoolniveau = factor(W6_schoolniveau)
-  ) |>
-  rename(
-    highest_edu = W6_schoolniveau
-  )
-
-# Add gender information from W10 to W6 demographics dataset by merging on ID
-safe_demographics_w6 <- safe_demographics_w6 |>
-  left_join(safe_demographics_w10 |> select(ID, sex), by = "ID")
-
-# Save the metadata (variable labels and value labels) to a JSON file
-meta <- lapply(names(demographics_w6), function(nm) {
-  x <- demographics_w6[[nm]]
-  list(
-    variable = nm,
-    variable_label = attr(x, "label"),
-    value_labels = as.list(attr(x, "labels"))
-  )
-})
-write_json(meta, "data/preprocessed/preproc_w6_demographics_metadata.json",
-           pretty = TRUE, auto_unbox = TRUE)
-
-# Check for missing values in the safe dataset
-# Determine number of NaNs in each column (missing values) ----
-num_nans <- sapply(safe_demographics_w6, function(x) {
-  if (is.character(x)) {
-    sum(is.na(x) | trimws(x) == "")
-  } else if (is.factor(x)) {
-    x_chr <- as.character(x)
-    sum(is.na(x_chr) | trimws(x_chr) == "")
-  } else {
-    sum(is.na(x))
-  }
-})
-cat("Number of NaNs in each column:\n")
-print(num_nans)
-cat("Total number of NaNs:", sum(num_nans), "\n") # 113 missing values in total
-# (5 for highest_degree, 108 for sex)
-
-# Save the safe dataset for future use
-write.csv(safe_demographics_w6,
-            file = "data/preprocessed/preproc_w6_demographics.csv",
-            quote = FALSE, 
             row.names = FALSE)
 
 # W11 demographics preprocessing ----
@@ -178,9 +185,9 @@ safe_demographics_w11 <- safe_demographics_w11 |>
     employment_status = JobSituation
   )
 
-# Add gender information from W10 to W11 demographics dataset by merging on ID
+# Add gender information from previous early wave to W11 demographics dataset by merging on ID
 safe_demographics_w11 <- safe_demographics_w11 |>
-  left_join(safe_demographics_w10 |> select(ID, sex), by = "ID")
+  left_join(early_wave_gender_info |> select(ID, sex), by = "ID")
 
 # Save the metadata (variable labels and value labels) to a JSON file
 meta <- lapply(names(w11_demographics), function(nm) {
@@ -208,8 +215,9 @@ num_nans <- sapply(safe_demographics_w11, function(x) {
 })
 cat("Number of NaNs in each column:\n")
 print(num_nans)
-cat("Total number of NaNs:", sum(num_nans), "\n") # 54 missing values in total
-# (13 for highest_edu, 12 for employment_status, 29 for sex)
+cat("Total number of NaNs:", sum(num_nans), "\n") # 400 missing values in total
+# (13 for highest_edu, 12 for employment_status, 4 for sex,
+# 368 for highest_edu_text, and 3 for ID; these we will exclude later)
 
 # Save the safe dataset for future use
 write.csv(safe_demographics_w11,
@@ -279,8 +287,8 @@ ggsave("reports/plots/demographics/w6_highest_edu_plot.svg",
        units = "in")
 
 # Sex ----
-# Note: For W6, we are using the sex information from W10, so we can
-# use the same metadata for relabeling as for W10
+# Note: For W6, we are using the sex information from one of the early waves, 
+# but we can be sure to use the same metadata for relabeling as for W10
 # Read metadata JSON
 meta <- fromJSON("data/preprocessed/preproc_w10_demographics_metadata.json",
                  simplifyVector = FALSE)
@@ -559,9 +567,8 @@ ggsave("reports/plots/demographics/w11_employment_plot.svg",
        units = "in")
 
 # Sex ----
-# Note: For W11, we are using the sex information from W10, so we
-# can use the same metadata for relabeling as for W10, since the sex
-# variable in W11 corresponds to the sex variable in W10
+# Note: For W11, we are using the sex information from one of the early waves,
+# but we can be sure to use the same metadata for relabeling as for W10
 # Read metadata JSON
 meta <- fromJSON("data/preprocessed/preproc_w10_demographics_metadata.json",
                  simplifyVector = FALSE)

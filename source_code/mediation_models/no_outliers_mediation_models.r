@@ -1,4 +1,4 @@
-# Mediation models per emotion regulation context
+# Mediation models per emotion regulation context with FIML and bootstrap SEs
 
 #################################################################
 # Outliers removed here, based on outlier_analysis.R script
@@ -254,7 +254,7 @@ print(standardizedSolution(fit_anxiety, ci = FALSE))
 # Mediation model 4 (anger) ----
 model_anger <- "
   # Direct effect
-  depression_score_sqrt ~ c1*extraversion + c2*agreeableness + 
+  depression_score_yeo ~ c1*extraversion + c2*agreeableness + 
                          c3*conscientiousness + c4*neuroticism + 
                          c5*openness + c6*sex
   
@@ -262,13 +262,13 @@ model_anger <- "
   anger_maladaptive_score ~ a1*extraversion + a2*agreeableness + 
                               a3*conscientiousness + a4*neuroticism +
                               a5*openness + a6*sex
-  anger_adaptive_score_yeo ~ a7*extraversion + a8*agreeableness + 
+  anger_adaptive_score_box ~ a7*extraversion + a8*agreeableness + 
                                a9*conscientiousness + a10*neuroticism +
                                a11*openness + a12*sex
-  depression_score_sqrt ~ b1*anger_maladaptive_score + b2*anger_adaptive_score_yeo
+  depression_score_yeo ~ b1*anger_maladaptive_score + b2*anger_adaptive_score_box
 
   # Covariance between mediators
-  anger_maladaptive_score ~~ anger_adaptive_score_yeo
+  anger_maladaptive_score ~~ anger_adaptive_score_box
   
   # Predictor-specific indirect effects via each mediator
     ind_ext_ang_mal := a1*b1
@@ -313,7 +313,7 @@ print(parameterEstimates(fit_anger, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_anger <- parameterEstimates(fit_anger) |>
-  filter((lhs == "depression_score_sqrt" | lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo" | 
+  filter((lhs == "depression_score_yeo" | lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_box" | 
           lhs == "ind_ext_ang_mal" | lhs == "ind_agr_ang_mal" | lhs == "ind_con_ang_mal" | lhs == "ind_neu_ang_mal" | lhs == "ind_ope_ang_mal" |
           lhs == "ind_ext_ang_ada" | lhs == "ind_agr_ang_ada" | lhs == "ind_con_ang_ada" | lhs == "ind_neu_ang_ada" | lhs == "ind_ope_ang_ada" |
           lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 

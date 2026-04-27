@@ -102,7 +102,7 @@ perform_outlier_analysis <- function(model, model_name, save_plot = TRUE,
     points(dffits_outliers, dffits_plot_values[dffits_outliers], pch = 16, col = "red")
   }
 
-  # Combine outlier IDs into a single list
+  # Combine unique outlier IDs into a single list
   all_outliers <- unique(c(leverage_outliers, studentized_outliers, 
                            cooks_outliers, dffits_outliers))
   model_data <- model.frame(model)
@@ -236,3 +236,41 @@ write_csv(tibble(ID = results_h3_anger$all_outlier_ids), "data/analysis/h3_anger
 
 # Outlier summary
 write_csv(results_h3_anger$outlier_summary, "data/analysis/h3_anger_outlier_summary.csv")
+
+# Combine all outlier summaries into a single table ----
+all_outlier_summaries <- bind_rows(
+  results$outlier_summary,
+  results_h2_general$outlier_summary,
+  results_h2_sadness$outlier_summary,
+  results_h2_anxiety$outlier_summary,
+  results_h2_anger$outlier_summary,
+  results_h3_general$outlier_summary,
+  results_h3_sadness$outlier_summary,
+  results_h3_anxiety$outlier_summary,
+  results_h3_anger$outlier_summary
+)
+write_csv(all_outlier_summaries, "data/analysis/all_outlier_summaries.csv")
+
+# Get all unique outlier IDs across all models ----
+# Each model's result is already a list with unique outlier IDs across the different methods for that model, so we can just combine those lists and get unique IDs across all models
+all_outlier_ids <- unique(c(
+  results$all_outlier_ids,
+  results_h2_general$all_outlier_ids,
+  results_h2_sadness$all_outlier_ids,
+  results_h2_anxiety$all_outlier_ids,
+  results_h2_anger$all_outlier_ids,
+  results_h3_general$all_outlier_ids,
+  results_h3_sadness$all_outlier_ids,
+  results_h3_anxiety$all_outlier_ids,
+  results_h3_anger$all_outlier_ids
+))
+
+print(paste("Total unique outliers across all models:", length(all_outlier_ids)))
+
+print("Unique outlier IDs per emotion context:")
+print(paste("General:", length(unique(c(results$all_outlier_ids, results_h2_general$all_outlier_ids, results_h3_general$all_outlier_ids)))))
+print(paste("Sadness:", length(unique(c(results$all_outlier_ids, results_h2_sadness$all_outlier_ids, results_h3_sadness$all_outlier_ids)))))
+print(paste("Anxiety:", length(unique(c(results$all_outlier_ids, results_h2_anxiety$all_outlier_ids, results_h3_anxiety$all_outlier_ids)))))
+print(paste("Anger:", length(unique(c(results$all_outlier_ids, results_h2_anger$all_outlier_ids, results_h3_anger$all_outlier_ids)))))
+
+write_csv(tibble(ID = all_outlier_ids), "data/analysis/all_unique_outliers.csv")

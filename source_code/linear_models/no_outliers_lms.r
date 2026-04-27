@@ -46,17 +46,19 @@ library(VGAM)
 
 # Load data ----
 data <- read_csv("data/merged/merged_data.csv")
-gender <- read_csv("data/preprocessed/preproc_w10_demographics.csv")
+gender <- read.csv("data/raw/basic_demo_early_waves.csv", sep = ";") |>
+  select(id, Gender_child) |>
+  rename(sex = Gender_child)
 
 # Add gender info to main dataset ----
 # First harmonize join key type
 data <- data |>
   mutate(ID = trimws(as.character(ID)))
 gender <- gender |>
-  mutate(ID = trimws(as.character(ID)))
-data <- data |>
-  left_join(gender |>
-              select(ID, sex), by = "ID")
+  mutate(ID = trimws(as.character(id)))
+data <- data|>
+  left_join(gender, by = "ID") |>
+  select(-id) # remove redundant id column
 
 # Save the updated dataset for future use
 write_csv(data, "data/merged/merged_data_with_gender.csv")
@@ -95,15 +97,15 @@ non_missing_idx <- !is.na(data_h1_no_outliers$depression_score)
 # Fit on non-missing values only
 bn_dep <- bestNormalize(data_h1_no_outliers$depression_score[non_missing_idx], r = 100)
 print(bn_dep)
-# Yeo-Johnson transformation with lambda = -1.426511 is the best transformation
+# Sqrt (x+a) with a = 0 is the best transformation
 # Initialize and assign with length-matched predictions
-data_h1_no_outliers$depression_score_yeo <- NA_real_
-data_h1_no_outliers$depression_score_yeo[non_missing_idx] <- as.numeric(
+data_h1_no_outliers$depression_score_sqrt <- NA_real_
+data_h1_no_outliers$depression_score_sqrt[non_missing_idx] <- as.numeric(
   predict(bn_dep, newdata = data_h1_no_outliers$depression_score[non_missing_idx])
 )
 
 # Check again the assumptions with the transformed outcome variable
-fit_h1_check_transformed <- lm(depression_score_yeo ~ extraversion +
+fit_h1_check_transformed <- lm(depression_score_sqrt ~ extraversion +
                                  agreeableness +
                                  conscientiousness + neuroticism + openness +
                                  sex, data = data_h1_no_outliers)
@@ -116,8 +118,8 @@ print(check_heteroscedasticity(fit_h1_check_transformed)) # now OK
 # Now we can fit the lavaan model with the transformed outcome variable
 # and bootstrap confidence intervals
 model_h1 <- "
-  # Depression (depression_score_yeo) ~ personality + sex
-  depression_score_yeo ~ extraversion + agreeableness + 
+  # Depression (depression_score_sqrt) ~ personality + sex
+  depression_score_sqrt ~ extraversion + agreeableness + 
                          conscientiousness + neuroticism + openness + sex
 "
 fit_h1 <- sem(model_h1, data = data_h1_no_outliers, missing = "fiml",
@@ -132,7 +134,7 @@ print(parameterEstimates(fit_h1, boot.ci.type = "bca.simple"))
 # Save p-values for later FDR correction by context 
 # (i.e., general, sadness, anxiety, anger)
 p_values_h1 <- parameterEstimates(fit_h1) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_sqrt" & op == "~" & rhs != "sex") |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H1***\n")
@@ -369,26 +371,26 @@ non_missing_idx <- !is.na(data_h2_ang_no_outliers$depression_score)
 # Fit on non-missing values only
 bn_dep <- bestNormalize(data_h2_ang_no_outliers$depression_score[non_missing_idx], r = 100)
 print(bn_dep)
-# sqrt(x + a) with a = 0 is the best transformation
+# Yeo-Johnson transformation with lambda = -1.423251 is the best transformation
 # Initialize and assign with length-matched predictions
-data_h2_ang_no_outliers$depression_score_sqrt <- NA_real_
-data_h2_ang_no_outliers$depression_score_sqrt[non_missing_idx] <- as.numeric(
+data_h2_ang_no_outliers$depression_score_yeo <- NA_real_
+data_h2_ang_no_outliers$depression_score_yeo[non_missing_idx] <- as.numeric(
   predict(bn_dep, newdata = data_h2_ang_no_outliers$depression_score[non_missing_idx])
 )
 
 # Check model assumptions again
-fit_h2_anger_check_transformed <- lm(depression_score_sqrt ~ anger_maladaptive_score + anger_adaptive_score + sex, 
+fit_h2_anger_check_transformed <- lm(depression_score_yeo ~ anger_maladaptive_score + anger_adaptive_score + sex, 
                                       data = data_h2_ang_no_outliers)
 svg("reports/plots/lm_diagnostics/no_outliers_check_model_h2_anger_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_anger_check_transformed)) # looks better
 dev.off()
-print(check_normality(fit_h2_anger_check_transformed)) # now OK
+print(check_normality(fit_h2_anger_check_transformed)) # still not OK
 print(check_heteroscedasticity(fit_h2_anger_check_transformed)) # now OK
 
 # Now we can fit the lavaan model with the transformed outcome variable and bootstrap confidence intervals
 model_h2_anger <- '
-  # Depression (depression_score_sqrt) ~ anger-specific emotion regulation strategy use + sex
-  depression_score_sqrt ~ anger_maladaptive_score + anger_adaptive_score + sex
+  # Depression (depression_score_yeo) ~ anger-specific emotion regulation strategy use + sex
+  depression_score_yeo ~ anger_maladaptive_score + anger_adaptive_score + sex
 '
 fit_h2_anger <- sem(model_h2_anger, data = data_h2_ang_no_outliers, missing = "fiml", 
                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
@@ -401,7 +403,7 @@ print(parameterEstimates(fit_h2_anger, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_ang <- parameterEstimates(fit_h2_anger) |>
-  filter(lhs == "depression_score_sqrt" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Anger-specific Emotion)***\n")
@@ -673,15 +675,15 @@ non_missing_idx <- !is.na(data_h3_ang_no_outliers$anger_adaptive_score)
 # Fit on non-missing values only
 bn_ada_ang <- bestNormalize(data_h3_ang_no_outliers$anger_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_ang)
-# Yeo-Johnson transformation with lambda = 2.483021 is the best transformation
+# Box Cox transformation with lambda = 1.999958 is the best transformation
 # Initialize and assign with length-matched predictions
-data_h3_ang_no_outliers$anger_adaptive_score_yeo <- NA_real_
-data_h3_ang_no_outliers$anger_adaptive_score_yeo[non_missing_idx] <- as.numeric(
+data_h3_ang_no_outliers$anger_adaptive_score_box <- NA_real_
+data_h3_ang_no_outliers$anger_adaptive_score_box[non_missing_idx] <- as.numeric(
   predict(bn_ada_ang, newdata = data_h3_ang_no_outliers$anger_adaptive_score[non_missing_idx])
 )
 
 # Check again the assumptions with the transformed outcome variable
-fit_h3_ad_ang_check_transformed <- lm(anger_adaptive_score_yeo ~  extraversion + agreeableness + 
+fit_h3_ad_ang_check_transformed <- lm(anger_adaptive_score_box ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data_h3_ang_no_outliers)
 svg("reports/plots/lm_diagnostics/no_outliers_check_model_h3_ad_anger_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_ang_check_transformed)) # looks better
@@ -694,7 +696,7 @@ model_h3_ang <- '
   # Maladaptive anger emotion regulation strategy use ~ personality + sex
   # Adaptive anger emotion regulation strategy use ~ personality + sex
     anger_maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
-    anger_adaptive_score_yeo ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
+    anger_adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
 fit_h3_ang <- sem(model_h3_ang, data = data_h3_ang_no_outliers, missing = "fiml", 
                       se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
@@ -707,7 +709,7 @@ print(parameterEstimates(fit_h3_ang, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_ang <- parameterEstimates(fit_h3_ang) |>
-  filter((lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo") & op == "~" & rhs != "sex") |>
+  filter((lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_box") & op == "~" & rhs != "sex") |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Anger-specific Emotion)***\n")
@@ -759,7 +761,7 @@ data_med_gen <- data |>
 # Add transformed variables for the general emotion model
 data_med_gen <- data_med_gen |>
   mutate(
-    depression_score_yeo = data_h1_no_outliers$depression_score_yeo[match(ID, data_h1_no_outliers$ID)],
+    depression_score_yeo = data_h2_gen_no_outliers$depression_score_yeo[match(ID, data_h2_gen_no_outliers$ID)],
     adaptive_score_yeo = data_h3_gen_no_outliers$adaptive_score_yeo[match(ID, data_h3_gen_no_outliers$ID)]
   )
 write_csv(data_med_gen, "data/analysis/no_outliers_data_med_gen.csv")
@@ -822,7 +824,7 @@ data_med_ang <- data |>
 # Add transformed variables for the anger-specific emotion model
 data_med_ang <- data_med_ang |>
   mutate(
-    depression_score_sqrt = data_h2_ang_no_outliers$depression_score_sqrt[match(ID, data_h2_ang_no_outliers$ID)],
-    anger_adaptive_score_yeo = data_h3_ang_no_outliers$anger_adaptive_score_yeo[match(ID, data_h3_ang_no_outliers$ID)]
+    depression_score_yeo = data_h2_ang_no_outliers$depression_score_yeo[match(ID, data_h2_ang_no_outliers$ID)],
+    anger_adaptive_score_box = data_h3_ang_no_outliers$anger_adaptive_score_box[match(ID, data_h3_ang_no_outliers$ID)]
   )
 write_csv(data_med_ang, "data/analysis/no_outliers_data_med_ang.csv")

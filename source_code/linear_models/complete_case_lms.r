@@ -1,4 +1,8 @@
-# Linear models with FIML and bootstrap confidence intervals ----
+# Linear models with bootstrap confidence intervals ----
+
+#################################################################
+# Complete case only 
+#################################################################
 
 # Testing of first three preregistered hypotheses:
 # 1. We hypothesize that Neuroticism during adolescence will be positively
@@ -41,26 +45,24 @@ library(bestNormalize)
 library(VGAM)
 
 # Load data ----
-data <- read.csv("data/merged/merged_data.csv")
-gender <- read.csv("data/raw/basic_demo_early_waves.csv", sep = ";") |>
-  select(id, Gender_child) |>
-  rename(sex = Gender_child)
+data <- read_csv("data/merged/merged_data.csv")
+gender <- read_csv("data/preprocessed/preproc_w10_demographics.csv")
 
 # Add gender info to main dataset ----
 # First harmonize join key type
 data <- data |>
   mutate(ID = trimws(as.character(ID)))
 gender <- gender |>
-  mutate(ID = trimws(as.character(id)))
-data <- data|>
-  left_join(gender, by = "ID") |>
-  select(-id) # remove redundant id column
+  mutate(ID = trimws(as.character(ID)))
+data <- data |>
+  left_join(gender |>
+              select(ID, sex), by = "ID")
 
 # Save the updated dataset for future use
 write_csv(data, "data/merged/merged_data_with_gender.csv")
 
 # Set sink to capture all output in a text file ----
-sink("data/analysis/lms_output.txt")
+sink("data/analysis/complete_cases_lms_output.txt")
 
 # Define and fit the model for hypothesis 1 ----
 # First check model assumptions
@@ -69,7 +71,7 @@ sink("data/analysis/lms_output.txt")
 fit_h1_check <- lm(depression_score ~ extraversion + agreeableness +
                      conscientiousness + neuroticism + openness +
                      sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h1_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h1_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h1_check))
 dev.off()
 
@@ -78,7 +80,7 @@ dev.off()
 print(check_normality(fit_h1_check)) # not OK
 print(check_heteroscedasticity(fit_h1_check)) # not OK
 
-# Given violation of residual normality and heteroscedasticity, determine best transformation
+# Given violation of residual normality, determine best transformation
 # method for depression_score (outcome variable)
 # We can use the bestNormalize package for this
 non_missing_idx <- !is.na(data$depression_score)
@@ -97,7 +99,7 @@ fit_h1_check_transformed <- lm(depression_score_yeo ~ extraversion +
                                  agreeableness +
                                  conscientiousness + neuroticism + openness +
                                  sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h1_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h1_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h1_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h1_check_transformed)) # now OK
@@ -110,8 +112,8 @@ model_h1 <- "
   depression_score_yeo ~ extraversion + agreeableness + 
                          conscientiousness + neuroticism + openness + sex
 "
-fit_h1 <- sem(model_h1, data = data, missing = "fiml",
-              se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h1 <- sem(model_h1, data = data,
+              se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H1***\n")
 print(summary(fit_h1, standardized = FALSE, fit.measures = TRUE))
@@ -136,7 +138,7 @@ print(standardizedSolution(fit_h1, ci = FALSE))
 fit_h2_general_check <- lm(depression_score ~ maladaptive_score +
                              adaptive_score +
                              sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_general_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_general_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_general_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h2_general_check)) # not OK
@@ -149,7 +151,7 @@ fit_h2_general_check_transformed <- lm(depression_score_yeo ~
                                          maladaptive_score +
                                            adaptive_score +
                                            sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_general_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_general_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_general_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h2_general_check_transformed)) # still not OK,
@@ -162,8 +164,8 @@ model_h2_general <- "
   # Depression (depression_score_yeo) ~ general emotion regulation + sex
   depression_score_yeo ~ maladaptive_score + adaptive_score + sex
 "
-fit_h2_general <- sem(model_h2_general, data = data, missing = "fiml",
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h2_general <- sem(model_h2_general, data = data,
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H2 (General Emotion)***\n")
 print(summary(fit_h2_general, standardized = FALSE, fit.measures = TRUE))
@@ -187,7 +189,7 @@ print(standardizedSolution(fit_h2_general, ci = FALSE))
 fit_h2_sadness_check <- lm(depression_score ~ sadness_maladaptive_score +
                              sadness_adaptive_score +
                              sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_sadness_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_sadness_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_sadness_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h2_sadness_check)) # not OK
@@ -200,7 +202,7 @@ fit_h2_sadness_check_transformed <- lm(depression_score_yeo ~
                                          sadness_maladaptive_score +
                                            sadness_adaptive_score +
                                            sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_sadness_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_sadness_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_sadness_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h2_sadness_check_transformed)) # still not OK,
@@ -213,8 +215,8 @@ model_h2_sadness <- "
   # Depression ~ sadness-specific emotion regulation + sex
   depression_score_yeo ~ sadness_maladaptive_score + sadness_adaptive_score + sex
 "
-fit_h2_sadness <- sem(model_h2_sadness, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h2_sadness <- sem(model_h2_sadness, data = data, 
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H2 (Sadness-specific Emotion)***\n")
 print(summary(fit_h2_sadness, standardized = FALSE, fit.measures = TRUE))
@@ -236,7 +238,7 @@ print(standardizedSolution(fit_h2_sadness, ci = FALSE))
 # doesn't work with check_model() function from performance package
 fit_h2_anxiety_check <- lm(depression_score ~ anxiety_maladaptive_score + anxiety_adaptive_score + sex, 
                            data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_anxiety_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_anxiety_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_anxiety_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h2_anxiety_check)) # not OK
@@ -247,7 +249,7 @@ print(check_heteroscedasticity(fit_h2_anxiety_check)) # not OK
 # and check assumptions again
 fit_h2_anxiety_check_transformed <- lm(depression_score_yeo ~ anxiety_maladaptive_score + anxiety_adaptive_score + sex, 
                                       data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_anxiety_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_anxiety_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_anxiety_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h2_anxiety_check_transformed)) # now OK
@@ -258,8 +260,8 @@ model_h2_anxiety <- '
   # Depression (depression_score_yeo) ~ anxiety-specific emotion regulation strategy use + sex
   depression_score_yeo ~ anxiety_maladaptive_score + anxiety_adaptive_score + sex
 '
-fit_h2_anxiety <- sem(model_h2_anxiety, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h2_anxiety <- sem(model_h2_anxiety, data = data, 
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H2 (Anxiety-specific Emotion)***\n")
 print(summary(fit_h2_anxiety, standardized = FALSE, fit.measures = TRUE))
@@ -281,7 +283,7 @@ print(standardizedSolution(fit_h2_anxiety, ci = FALSE))
 # doesn't work with check_model() function from performance package
 fit_h2_anger_check <- lm(depression_score ~ anger_maladaptive_score + anger_adaptive_score + sex, 
                          data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_anger_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_anger_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_anger_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h2_anger_check)) # not OK
@@ -292,7 +294,7 @@ print(check_heteroscedasticity(fit_h2_anger_check)) # not OK
 # and check assumptions again
 fit_h2_anger_check_transformed <- lm(depression_score_yeo ~ anger_maladaptive_score + anger_adaptive_score + sex, 
                                       data = data)
-svg("reports/plots/lm_diagnostics/check_model_h2_anger_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h2_anger_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h2_anger_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h2_anger_check_transformed)) # still not OK, but above plots look way way better than before
@@ -303,8 +305,8 @@ model_h2_anger <- '
   # Depression (depression_score_yeo) ~ anger-specific emotion regulation strategy use + sex
   depression_score_yeo ~ anger_maladaptive_score + anger_adaptive_score + sex
 '
-fit_h2_anger <- sem(model_h2_anger, data = data, missing = "fiml", 
-                     se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h2_anger <- sem(model_h2_anger, data = data, 
+                     se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H2 (Anger-specific Emotion)***\n")
 print(summary(fit_h2_anger, standardized = FALSE, fit.measures = TRUE))
@@ -329,7 +331,7 @@ print(standardizedSolution(fit_h2_anger, ci = FALSE))
 # performance package doesn't support multivariate (tried manual checks but failed, so will just check univariate models for now)
 fit_h3_mal_gen_check <- lm(maladaptive_score ~ extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_mal_general_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_mal_general_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_mal_gen_check)) # good
 dev.off()
 print(check_normality(fit_h3_mal_gen_check)) # OK
@@ -337,7 +339,7 @@ print(check_heteroscedasticity(fit_h3_mal_gen_check)) # OK
 
 fit_h3_ad_gen_check <- lm(adaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_general_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_general_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_gen_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h3_ad_gen_check)) # not OK
@@ -360,7 +362,7 @@ data$adaptive_score_box[non_missing_idx] <- as.numeric(
 # Check again the assumptions with the transformed outcome variable
 fit_h3_ad_gen_check_transformed <- lm(adaptive_score_box ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_general_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_general_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_gen_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h3_ad_gen_check_transformed)) # still not OK, but above plots look way way better than before
@@ -373,8 +375,8 @@ model_h3_general <- '
     maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
     adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
-fit_h3_general <- sem(model_h3_general, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h3_general <- sem(model_h3_general, data = data, 
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H3 (General Emotion)***\n")
 print(summary(fit_h3_general, standardized = FALSE, fit.measures = TRUE))
@@ -398,7 +400,7 @@ print(standardizedSolution(fit_h3_general, ci = FALSE))
 # performance package doesn't support multivariate (tried manual checks but failed, so will just check univariate models for now)
 fit_h3_mal_sad_check <- lm(sadness_maladaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_mal_sadness_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_mal_sadness_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_mal_sad_check)) # good
 dev.off()
 print(check_normality(fit_h3_mal_sad_check)) # OK
@@ -406,7 +408,7 @@ print(check_heteroscedasticity(fit_h3_mal_sad_check)) # OK
 
 fit_h3_ad_sad_check <- lm(sadness_adaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_sadness_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_sadness_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_sad_check)) # a bit ambiguous
 dev.off()
 print(check_normality(fit_h3_ad_sad_check)) # not OK
@@ -429,7 +431,7 @@ data$sadness_adaptive_score_ord[non_missing_idx] <- as.numeric(
 # Check again the assumptions with the transformed outcome variable
 fit_h3_ad_sad_check_transformed <- lm(sadness_adaptive_score_ord ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_sadness_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_sadness_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_sad_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h3_ad_sad_check_transformed)) # now OK
@@ -442,8 +444,8 @@ model_h3_sad <- '
     sadness_maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
     sadness_adaptive_score_ord ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
-fit_h3_sad <- sem(model_h3_sad, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h3_sad <- sem(model_h3_sad, data = data, 
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H3 (Sadness-specific Emotion)***\n")
 print(summary(fit_h3_sad, standardized = FALSE, fit.measures = TRUE))
@@ -467,7 +469,7 @@ print(standardizedSolution(fit_h3_sad, ci = FALSE))
 # performance package doesn't support multivariate (tried manual checks but failed, so will just check univariate models for now)
 fit_h3_mal_anx_check <- lm(anxiety_maladaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_mal_anxiety_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_mal_anxiety_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_mal_anx_check)) # good
 dev.off()
 print(check_normality(fit_h3_mal_anx_check)) # OK
@@ -475,13 +477,13 @@ print(check_heteroscedasticity(fit_h3_mal_anx_check)) # OK
 
 fit_h3_ad_anx_check <- lm(anxiety_adaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_anxiety_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_anxiety_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_anx_check)) # not that good plots
 dev.off()
 print(check_normality(fit_h3_ad_anx_check)) # not OK
-print(check_heteroscedasticity(fit_h3_ad_anx_check)) # OK
+print(check_heteroscedasticity(fit_h3_ad_anx_check)) # not OK
 
-# Given violation of residual normality, determine best transformation
+# Given violation of residual normality and heteroscedasticity, determine best transformation
 # method for anxiety_adaptive_score (outcome variable)
 # We can use the bestNormalize package for this
 non_missing_idx <- !is.na(data$anxiety_adaptive_score)
@@ -498,7 +500,7 @@ data$anxiety_adaptive_score_box[non_missing_idx] <- as.numeric(
 # Check again the assumptions with the transformed outcome variable
 fit_h3_ad_anx_check_transformed <- lm(anxiety_adaptive_score_box ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_anxiety_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_anxiety_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_anx_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h3_ad_anx_check_transformed)) # now OK
@@ -511,8 +513,8 @@ model_h3_anx <- '
     anxiety_maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
     anxiety_adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
-fit_h3_anx <- sem(model_h3_anx, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h3_anx <- sem(model_h3_anx, data = data, 
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H3 (Anxiety-specific Emotion)***\n")
 print(summary(fit_h3_anx, standardized = FALSE, fit.measures = TRUE))
@@ -536,14 +538,14 @@ print(standardizedSolution(fit_h3_anx, ci = FALSE))
 # performance package doesn't support multivariate (tried manual checks but failed, so will just check univariate models for now)
 fit_h3_mal_ang_check <- lm(anger_maladaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_mal_anger_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_mal_anger_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_mal_ang_check)) # good
 dev.off()
 print(check_normality(fit_h3_mal_ang_check)) # OK
 print(check_heteroscedasticity(fit_h3_mal_ang_check)) # OK
 fit_h3_ad_ang_check <- lm(anger_adaptive_score ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_anger_untransformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_anger_untransformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_ang_check)) # not that good plots
 dev.off()
 print(check_normality(fit_h3_ad_ang_check)) # not OK
@@ -566,7 +568,7 @@ data$anger_adaptive_score_yeo[non_missing_idx] <- as.numeric(
 # Check again the assumptions with the transformed outcome variable
 fit_h3_ad_ang_check_transformed <- lm(anger_adaptive_score_yeo ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + sex, data = data)
-svg("reports/plots/lm_diagnostics/check_model_h3_ad_anger_transformed.svg", width = 12, height = 10)
+svg("reports/plots/lm_diagnostics/complete_cases_check_model_h3_ad_anger_transformed.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_ang_check_transformed)) # looks better
 dev.off()
 print(check_normality(fit_h3_ad_ang_check_transformed)) # now OK
@@ -579,8 +581,8 @@ model_h3_ang <- '
     anger_maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
     anger_adaptive_score_yeo ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + sex
 '
-fit_h3_ang <- sem(model_h3_ang, data = data, missing = "fiml", 
-                      se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
+fit_h3_ang <- sem(model_h3_ang, data = data, 
+                      se = "bootstrap", bootstrap = 10000)
 
 cat("***Summary of the fitted model H3 (Anger-specific Emotion)***\n")
 print(summary(fit_h3_ang, standardized = FALSE, fit.measures = TRUE))
@@ -623,7 +625,7 @@ adjusted_p_values <- tibble(
                 names(p_values_anx_adj), names(p_values_ang_adj))
 )
 
-write_csv(adjusted_p_values, "data/analysis/lms_adjusted_p_values.csv")
+write_csv(adjusted_p_values, "data/analysis/complete_cases_lms_adjusted_p_values.csv")
 
 # Save extended data with all transformations for future use
-write_csv(data, "data/analysis/extended_data_with_transformations.csv")
+write_csv(data, "data/analysis/complete_cases_extended_data_with_transformations.csv")
