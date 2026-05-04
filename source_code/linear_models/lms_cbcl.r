@@ -46,17 +46,19 @@ library(VGAM)
 
 # Load data ----
 data <- read_csv("data/merged/merged_data_with_cbcl.csv")
-gender <- read_csv("data/preprocessed/preproc_w10_demographics.csv")
+gender <- read.csv("data/raw/basic_demo_early_waves.csv", sep = ";") |>
+  select(id, Gender_child) |>
+  rename(sex = Gender_child)
 
 # Add gender info to main dataset ----
 # First harmonize join key type
 data <- data |>
   mutate(ID = trimws(as.character(ID)))
 gender <- gender |>
-  mutate(ID = trimws(as.character(ID)))
-data <- data |>
-  left_join(gender |>
-              select(ID, sex), by = "ID")
+  mutate(ID = trimws(as.character(id)))
+data <- data|>
+  left_join(gender, by = "ID") |>
+  select(-id) # remove redundant id column
 
 # Save the updated dataset for future use
 write_csv(data, "data/merged/merged_data_with_gender_and_cbcl.csv")
@@ -264,7 +266,7 @@ model_h2_anxiety <- '
   # Depression (depression_score_yeo) ~ anxiety-specific emotion regulation strategy use + sex
   depression_score_yeo ~ anxiety_maladaptive_score + anxiety_adaptive_score + internalizing + sex
 '
-fit_h2_anxiety <- sem(model_h2_anxiety, data = data, missing = "fiml", 
+fit_h2_anxiety <- sem(model_h2_anxiety, data = data, missing = "fiml",
                       se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
 
 cat("***Summary of the fitted model H2 (Anxiety-specific Emotion)***\n")
@@ -356,15 +358,15 @@ non_missing_idx <- !is.na(data$adaptive_score)
 # Fit on non-missing values only
 bn_ada <- bestNormalize(data$adaptive_score[non_missing_idx], r = 100)
 print(bn_ada)
-# Ordernorm transformation is the best transformation
+# Box-Cox transformation with lambda = 1.920697 is the best transformation
 # Initialize and assign with length-matched predictions
-data$adaptive_score_ord <- NA_real_
-data$adaptive_score_ord[non_missing_idx] <- as.numeric(
+data$adaptive_score_box <- NA_real_
+data$adaptive_score_box[non_missing_idx] <- as.numeric(
   predict(bn_ada, newdata = data$adaptive_score[non_missing_idx])
 )
 
 # Check again the assumptions with the transformed outcome variable
-fit_h3_ad_gen_check_transformed <- lm(adaptive_score_ord ~  extraversion + agreeableness + 
+fit_h3_ad_gen_check_transformed <- lm(adaptive_score_box ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + internalizing + sex, data = data)
 svg("reports/plots/lm_diagnostics/check_model_h3_ad_general_transformed_with_cbcl.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_gen_check_transformed)) # looks better
@@ -377,7 +379,7 @@ model_h3_general <- '
   # Maladaptive emotion regulation strategy use ~ personality + sex
   # Adaptive emotion regulation strategy use ~ personality + sex
     maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
-    adaptive_score_ord ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
+    adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
 '
 fit_h3_general <- sem(model_h3_general, data = data, missing = "fiml", 
                       se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
@@ -390,7 +392,7 @@ print(parameterEstimates(fit_h3_general, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_gen <- parameterEstimates(fit_h3_general) |>
-  filter((lhs == "maladaptive_score" | lhs == "adaptive_score_ord") & op == "~" & rhs != "sex") |>
+  filter((lhs == "maladaptive_score" | lhs == "adaptive_score_box") & op == "~" & rhs != "sex") |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (General Emotion)***\n")
@@ -494,15 +496,15 @@ non_missing_idx <- !is.na(data$anxiety_adaptive_score)
 # Fit on non-missing values only
 bn_ada_anx <- bestNormalize(data$anxiety_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_anx)
-# Box-Cox transformation with lambda = 1.914122 is the best transformation
+# OrderNorm transformation is the best transformation
 # Initialize and assign with length-matched predictions
-data$anxiety_adaptive_score_box <- NA_real_
-data$anxiety_adaptive_score_box[non_missing_idx] <- as.numeric(
+data$anxiety_adaptive_score_ord <- NA_real_
+data$anxiety_adaptive_score_ord[non_missing_idx] <- as.numeric(
   predict(bn_ada_anx, newdata = data$anxiety_adaptive_score[non_missing_idx])
 )
 
 # Check again the assumptions with the transformed outcome variable
-fit_h3_ad_anx_check_transformed <- lm(anxiety_adaptive_score_box ~  extraversion + agreeableness + 
+fit_h3_ad_anx_check_transformed <- lm(anxiety_adaptive_score_ord ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + internalizing + sex, data = data)
 svg("reports/plots/lm_diagnostics/check_model_h3_ad_anxiety_transformed_with_cbcl.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_anx_check_transformed)) # looks better
@@ -515,7 +517,7 @@ model_h3_anx <- '
   # Maladaptive anxiety emotion regulation strategy use ~ personality + sex
   # Adaptive anxiety emotion regulation strategy use ~ personality + sex
     anxiety_maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
-    anxiety_adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
+    anxiety_adaptive_score_ord ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
 '
 fit_h3_anx <- sem(model_h3_anx, data = data, missing = "fiml", 
                       se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
@@ -528,7 +530,7 @@ print(parameterEstimates(fit_h3_anx, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_anx <- parameterEstimates(fit_h3_anx) |>
-  filter((lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_box") & op == "~" & rhs != "sex") |>
+  filter((lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_ord") & op == "~" & rhs != "sex") |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Anxiety-specific Emotion)***\n")
