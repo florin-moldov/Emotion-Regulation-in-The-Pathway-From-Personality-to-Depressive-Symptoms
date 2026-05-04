@@ -127,7 +127,7 @@ print(parameterEstimates(fit_h1, boot.ci.type = "bca.simple"))
 # Save p-values for later FDR correction by context 
 # (i.e., general, sadness, anxiety, anger)
 p_values_h1 <- parameterEstimates(fit_h1) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H1***\n")
@@ -180,7 +180,7 @@ print(parameterEstimates(fit_h2_general, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context
 p_values_h2_gen <- parameterEstimates(fit_h2_general) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (General Emotion)***\n")
@@ -232,7 +232,7 @@ print(parameterEstimates(fit_h2_sadness, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_sad <- parameterEstimates(fit_h2_sadness) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Sadness-specific Emotion)***\n")
@@ -277,7 +277,7 @@ print(parameterEstimates(fit_h2_anxiety, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_anx <- parameterEstimates(fit_h2_anxiety) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Anxiety-specific Emotion)***\n")
@@ -322,7 +322,7 @@ print(parameterEstimates(fit_h2_anger, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_ang <- parameterEstimates(fit_h2_anger) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & rhs != "sex") |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Anger-specific Emotion)***\n")
@@ -392,7 +392,7 @@ print(parameterEstimates(fit_h3_general, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_gen <- parameterEstimates(fit_h3_general) |>
-  filter((lhs == "maladaptive_score" | lhs == "adaptive_score_box") & op == "~" & rhs != "sex") |>
+  filter((lhs == "maladaptive_score" | lhs == "adaptive_score_box") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (General Emotion)***\n")
@@ -461,7 +461,7 @@ print(parameterEstimates(fit_h3_sad, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_sad <- parameterEstimates(fit_h3_sad) |>
-  filter((lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_ord") & op == "~" & rhs != "sex") |>
+  filter((lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_ord") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Sadness-specific Emotion)***\n")
@@ -530,7 +530,7 @@ print(parameterEstimates(fit_h3_anx, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_anx <- parameterEstimates(fit_h3_anx) |>
-  filter((lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_ord") & op == "~" & rhs != "sex") |>
+  filter((lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_ord") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Anxiety-specific Emotion)***\n")
@@ -598,7 +598,7 @@ print(parameterEstimates(fit_h3_ang, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_ang <- parameterEstimates(fit_h3_ang) |>
-  filter((lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo") & op == "~" & rhs != "sex") |>
+  filter((lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Anger-specific Emotion)***\n")
