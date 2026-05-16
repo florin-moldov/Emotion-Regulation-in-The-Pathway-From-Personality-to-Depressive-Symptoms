@@ -23,7 +23,6 @@ data <- read_csv("data/merged/merged_data_with_gender_and_anx.csv")
 # Perform MCAR test ----
 result <- mcar_test(data) 
 print(result)
-# p-value is 0.240! So plausible MCAR missing data
 
 # End sink to stop capturing output in the text file ----
 sink(file = NULL)

@@ -19,7 +19,6 @@ data <- read_csv("data/merged/merged_data_with_gender.csv")
 # Perform MCAR test ----
 result <- mcar_test(data) 
 print(result)
-# p-value is 0.062! so plausible MCAR data
 
 write_csv(result, "data/analysis/mcar_test_results.csv")
 
