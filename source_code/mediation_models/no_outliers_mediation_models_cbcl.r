@@ -103,10 +103,10 @@ print(parameterEstimates(fit_general, boot.ci.type = "bca.simple"))
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_general <- parameterEstimates(fit_general) |>
   filter((lhs == "depression_score_yeo" | lhs == "maladaptive_score_yeo" | lhs == "adaptive_score_yeo" | 
-          lhs == "ind_ext_mal" | lhs == "ind_agr_mal" | lhs == "ind_con_mal" | lhs == "ind_neu_mal" | lhs == "ind_ope_mal" |
-          lhs == "ind_ext_ada" | lhs == "ind_agr_ada" | lhs == "ind_con_ada" | lhs == "ind_neu_ada" | lhs == "ind_ope_ada" |
-          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
-          (op == "~" | op == ":=") & !rhs %in% c("sex", "internalizing")) |>
+          lhs == "ind_ext_mal" | lhs == "ind_agr_mal" | lhs == "ind_con_mal" | lhs == "ind_neu_mal" | lhs == "ind_ope_mal" | lhs == "ind_int_mal" |
+          lhs == "ind_ext_ada" | lhs == "ind_agr_ada" | lhs == "ind_con_ada" | lhs == "ind_neu_ada" | lhs == "ind_ope_ada" | lhs == "ind_int_ada" |
+          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope" | lhs == "tot_int") & 
+          (op == "~" | op == ":=") & !rhs %in% c("sex")) |>
   pull(pvalue, name = label)
 
 cat("***Standardized parameter estimates General***\n")
@@ -179,10 +179,10 @@ print(parameterEstimates(fit_sadness, boot.ci.type = "bca.simple"))
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_sadness <- parameterEstimates(fit_sadness) |>
   filter((lhs == "depression_score_yeo" | lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_box" | 
-          lhs == "ind_ext_sad_mal" | lhs == "ind_agr_sad_mal" | lhs == "ind_con_sad_mal" | lhs == "ind_neu_sad_mal" | lhs == "ind_ope_sad_mal" |
-          lhs == "ind_ext_sad_ada" | lhs == "ind_agr_sad_ada" | lhs == "ind_con_sad_ada" | lhs == "ind_neu_sad_ada" | lhs == "ind_ope_sad_ada" |
-          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
-          (op == "~" | op == ":=") & !rhs %in% c("sex", "internalizing")) |>
+          lhs == "ind_ext_sad_mal" | lhs == "ind_agr_sad_mal" | lhs == "ind_con_sad_mal" | lhs == "ind_neu_sad_mal" | lhs == "ind_ope_sad_mal" | lhs == "ind_int_sad_mal" |
+          lhs == "ind_ext_sad_ada" | lhs == "ind_agr_sad_ada" | lhs == "ind_con_sad_ada" | lhs == "ind_neu_sad_ada" | lhs == "ind_ope_sad_ada" | lhs == "ind_int_sad_ada" |
+          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope" | lhs == "tot_int") & 
+          (op == "~" | op == ":=") & !rhs %in% c("sex")) |>
   pull(pvalue, name = label)
 
 cat("***Standardized parameter estimates Sadness***\n")
@@ -255,10 +255,10 @@ print(parameterEstimates(fit_anxiety, boot.ci.type = "bca.simple"))
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_anxiety <- parameterEstimates(fit_anxiety) |>
   filter((lhs == "depression_score_yeo" | lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_box" | 
-          lhs == "ind_ext_anx_mal" | lhs == "ind_agr_anx_mal" | lhs == "ind_con_anx_mal" | lhs == "ind_neu_anx_mal" | lhs == "ind_ope_anx_mal" |
-          lhs == "ind_ext_anx_ada" | lhs == "ind_agr_anx_ada" | lhs == "ind_con_anx_ada" | lhs == "ind_neu_anx_ada" | lhs == "ind_ope_anx_ada" |
-          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
-          (op == "~" | op == ":=") & !rhs %in% c("sex", "internalizing")) |>
+          lhs == "ind_ext_anx_mal" | lhs == "ind_agr_anx_mal" | lhs == "ind_con_anx_mal" | lhs == "ind_neu_anx_mal" | lhs == "ind_ope_anx_mal" | lhs == "ind_int_anx_mal" |
+          lhs == "ind_ext_anx_ada" | lhs == "ind_agr_anx_ada" | lhs == "ind_con_anx_ada" | lhs == "ind_neu_anx_ada" | lhs == "ind_ope_anx_ada" | lhs == "ind_int_anx_ada" |
+          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope" | lhs == "tot_int") & 
+          (op == "~" | op == ":=") & !rhs %in% c("sex")) |>
   pull(pvalue, name = label)
 
 cat("***Standardized parameter estimates Anxiety***\n")
@@ -275,13 +275,13 @@ model_anger <- "
   anger_maladaptive_score ~ a1*extraversion + a2*agreeableness + 
                               a3*conscientiousness + a4*neuroticism +
                               a5*openness + a6*internalizing + a7*sex
-  anger_adaptive_score_yeo ~ a8*extraversion + a9*agreeableness + 
+  anger_adaptive_score_box ~ a8*extraversion + a9*agreeableness + 
                                a10*conscientiousness + a11*neuroticism +
                                a12*openness + a13*internalizing + a14*sex
-  depression_score_yeo ~ b1*anger_maladaptive_score + b2*anger_adaptive_score_yeo
+  depression_score_yeo ~ b1*anger_maladaptive_score + b2*anger_adaptive_score_box
 
   # Covariance between mediators
-  anger_maladaptive_score ~~ anger_adaptive_score_yeo
+  anger_maladaptive_score ~~ anger_adaptive_score_box
   
   # Predictor-specific indirect effects via each mediator
     ind_ext_ang_mal := a1*b1
@@ -330,11 +330,11 @@ print(parameterEstimates(fit_anger, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context and path coefficients for reporting
 p_values_anger <- parameterEstimates(fit_anger) |>
-  filter((lhs == "depression_score_yeo" | lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo" | 
-          lhs == "ind_ext_ang_mal" | lhs == "ind_agr_ang_mal" | lhs == "ind_con_ang_mal" | lhs == "ind_neu_ang_mal" | lhs == "ind_ope_ang_mal" |
-          lhs == "ind_ext_ang_ada" | lhs == "ind_agr_ang_ada" | lhs == "ind_con_ang_ada" | lhs == "ind_neu_ang_ada" | lhs == "ind_ope_ang_ada" |
-          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope") & 
-          (op == "~" | op == ":=") & !rhs %in% c("sex", "internalizing")) |>
+  filter((lhs == "depression_score_yeo" | lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_box" | 
+          lhs == "ind_ext_ang_mal" | lhs == "ind_agr_ang_mal" | lhs == "ind_con_ang_mal" | lhs == "ind_neu_ang_mal" | lhs == "ind_ope_ang_mal" | lhs == "ind_int_ang_mal" |
+          lhs == "ind_ext_ang_ada" | lhs == "ind_agr_ang_ada" | lhs == "ind_con_ang_ada" | lhs == "ind_neu_ang_ada" | lhs == "ind_ope_ang_ada" | lhs == "ind_int_ang_ada" |
+          lhs == "tot_ext" | lhs == "tot_agr" | lhs == "tot_con" | lhs == "tot_neu" | lhs == "tot_ope" | lhs == "tot_int") & 
+          (op == "~" | op == ":=") & !rhs %in% c("sex")) |>
   pull(pvalue, name = label)
 
 cat("***Standardized parameter estimates Anger***\n")
@@ -347,75 +347,83 @@ sink(file = NULL)
 # Combine p-values from all models by context and path type for correction
 p_values_gen_a <- c(p_values_general["a1"], p_values_general["a2"], 
                     p_values_general["a3"], p_values_general["a4"], 
-                    p_values_general["a5"], p_values_general["a8"], 
-                    p_values_general["a9"], p_values_general["a10"], 
-                    p_values_general["a11"], p_values_general["a12"])
+                    p_values_general["a5"], p_values_general["a6"],
+                    p_values_general["a8"], p_values_general["a9"], 
+                    p_values_general["a10"], p_values_general["a11"], 
+                    p_values_general["a12"], p_values_general["a13"])
 p_values_gen_b <- c(p_values_general["b1"], p_values_general["b2"])
 p_values_gen_c <- c(p_values_general["c1"], p_values_general["c2"], 
                     p_values_general["c3"], p_values_general["c4"], 
-                    p_values_general["c5"])
+                    p_values_general["c5"], p_values_general["c6"])
 p_values_gen_ind <- c(p_values_general["ind_ext_mal"], p_values_general["ind_agr_mal"], 
                       p_values_general["ind_con_mal"], p_values_general["ind_neu_mal"], 
-                      p_values_general["ind_ope_mal"], p_values_general["ind_ext_ada"], 
-                      p_values_general["ind_agr_ada"], p_values_general["ind_con_ada"], 
-                      p_values_general["ind_neu_ada"], p_values_general["ind_ope_ada"])
+                      p_values_general["ind_ope_mal"], p_values_general["ind_int_mal"],
+                      p_values_general["ind_ext_ada"], p_values_general["ind_agr_ada"], 
+                      p_values_general["ind_con_ada"], p_values_general["ind_neu_ada"], 
+                      p_values_general["ind_ope_ada"], p_values_general["ind_int_ada"])
 p_values_gen_tot <- c(p_values_general["tot_ext"], p_values_general["tot_agr"], 
                       p_values_general["tot_con"], p_values_general["tot_neu"], 
-                      p_values_general["tot_ope"])
+                      p_values_general["tot_ope"], p_values_general["tot_int"])
 
 p_values_sad_a <- c(p_values_sadness["a1"], p_values_sadness["a2"], 
                     p_values_sadness["a3"], p_values_sadness["a4"], 
-                    p_values_sadness["a5"], p_values_sadness["a8"], 
-                    p_values_sadness["a9"], p_values_sadness["a10"], 
-                    p_values_sadness["a11"], p_values_sadness["a12"])
+                    p_values_sadness["a5"], p_values_sadness["a6"],
+                    p_values_sadness["a8"], p_values_sadness["a9"], 
+                    p_values_sadness["a10"], p_values_sadness["a11"], 
+                    p_values_sadness["a12"], p_values_sadness["a13"])
 p_values_sad_b <- c(p_values_sadness["b1"], p_values_sadness["b2"])
 p_values_sad_c <- c(p_values_sadness["c1"], p_values_sadness["c2"], 
                     p_values_sadness["c3"], p_values_sadness["c4"], 
-                    p_values_sadness["c5"])
+                    p_values_sadness["c5"], p_values_sadness["c6"])
 p_values_sad_ind <- c(p_values_sadness["ind_ext_sad_mal"], p_values_sadness["ind_agr_sad_mal"], 
                       p_values_sadness["ind_con_sad_mal"], p_values_sadness["ind_neu_sad_mal"], 
-                      p_values_sadness["ind_ope_sad_mal"], p_values_sadness["ind_ext_sad_ada"], 
-                      p_values_sadness["ind_agr_sad_ada"], p_values_sadness["ind_con_sad_ada"], 
-                      p_values_sadness["ind_neu_sad_ada"], p_values_sadness["ind_ope_sad_ada"])
+                      p_values_sadness["ind_ope_sad_mal"], p_values_sadness["ind_int_sad_mal"],
+                      p_values_sadness["ind_ext_sad_ada"], p_values_sadness["ind_agr_sad_ada"], 
+                      p_values_sadness["ind_con_sad_ada"], p_values_sadness["ind_neu_sad_ada"], 
+                      p_values_sadness["ind_ope_sad_ada"], p_values_sadness["ind_int_sad_ada"])
 p_values_sad_tot <- c(p_values_sadness["tot_ext"], p_values_sadness["tot_agr"], 
                       p_values_sadness["tot_con"], p_values_sadness["tot_neu"], 
-                      p_values_sadness["tot_ope"])
+                      p_values_sadness["tot_ope"], p_values_sadness["tot_int"])
 
 p_values_anx_a <- c(p_values_anxiety["a1"], p_values_anxiety["a2"], 
                     p_values_anxiety["a3"], p_values_anxiety["a4"], 
-                    p_values_anxiety["a5"], p_values_anxiety["a8"], 
-                    p_values_anxiety["a9"], p_values_anxiety["a10"], 
-                    p_values_anxiety["a11"], p_values_anxiety["a12"])
+                    p_values_anxiety["a5"], p_values_anxiety["a6"],
+                    p_values_anxiety["a8"], p_values_anxiety["a9"], 
+                    p_values_anxiety["a10"], p_values_anxiety["a11"], 
+                    p_values_anxiety["a12"], p_values_anxiety["a13"])
 p_values_anx_b <- c(p_values_anxiety["b1"], p_values_anxiety["b2"])
 p_values_anx_c <- c(p_values_anxiety["c1"], p_values_anxiety["c2"], 
                     p_values_anxiety["c3"], p_values_anxiety["c4"], 
-                    p_values_anxiety["c5"])
+                    p_values_anxiety["c5"], p_values_anxiety["c6"])
 p_values_anx_ind <- c(p_values_anxiety["ind_ext_anx_mal"], p_values_anxiety["ind_agr_anx_mal"], 
                       p_values_anxiety["ind_con_anx_mal"], p_values_anxiety["ind_neu_anx_mal"], 
-                      p_values_anxiety["ind_ope_anx_mal"], p_values_anxiety["ind_ext_anx_ada"], 
-                      p_values_anxiety["ind_agr_anx_ada"], p_values_anxiety["ind_con_anx_ada"], 
-                      p_values_anxiety["ind_neu_anx_ada"], p_values_anxiety["ind_ope_anx_ada"])
+                      p_values_anxiety["ind_ope_anx_mal"], p_values_anxiety["ind_int_anx_mal"],
+                      p_values_anxiety["ind_ext_anx_ada"], p_values_anxiety["ind_agr_anx_ada"], 
+                      p_values_anxiety["ind_con_anx_ada"], p_values_anxiety["ind_neu_anx_ada"], 
+                      p_values_anxiety["ind_ope_anx_ada"], p_values_anxiety["ind_int_anx_ada"])
 p_values_anx_tot <- c(p_values_anxiety["tot_ext"], p_values_anxiety["tot_agr"], 
                       p_values_anxiety["tot_con"], p_values_anxiety["tot_neu"], 
-                      p_values_anxiety["tot_ope"])
+                      p_values_anxiety["tot_ope"], p_values_anxiety["tot_int"])
 
 p_values_ang_a <- c(p_values_anger["a1"], p_values_anger["a2"], 
                     p_values_anger["a3"], p_values_anger["a4"], 
-                    p_values_anger["a5"], p_values_anger["a8"], 
-                    p_values_anger["a9"], p_values_anger["a10"], 
-                    p_values_anger["a11"], p_values_anger["a12"])
+                    p_values_anger["a5"], p_values_anger["a6"],
+                    p_values_anger["a8"], p_values_anger["a9"], 
+                    p_values_anger["a10"], p_values_anger["a11"], 
+                    p_values_anger["a12"], p_values_anger["a13"])
 p_values_ang_b <- c(p_values_anger["b1"], p_values_anger["b2"])
 p_values_ang_c <- c(p_values_anger["c1"], p_values_anger["c2"], 
                     p_values_anger["c3"], p_values_anger["c4"], 
-                    p_values_anger["c5"])
+                    p_values_anger["c5"], p_values_anger["c6"])
 p_values_ang_ind <- c(p_values_anger["ind_ext_ang_mal"], p_values_anger["ind_agr_ang_mal"], 
                       p_values_anger["ind_con_ang_mal"], p_values_anger["ind_neu_ang_mal"], 
-                      p_values_anger["ind_ope_ang_mal"], p_values_anger["ind_ext_ang_ada"], 
-                      p_values_anger["ind_agr_ang_ada"], p_values_anger["ind_con_ang_ada"], 
-                      p_values_anger["ind_neu_ang_ada"], p_values_anger["ind_ope_ang_ada"])
+                      p_values_anger["ind_ope_ang_mal"], p_values_anger["ind_int_ang_mal"],
+                      p_values_anger["ind_ext_ang_ada"], p_values_anger["ind_agr_ang_ada"], 
+                      p_values_anger["ind_con_ang_ada"], p_values_anger["ind_neu_ang_ada"], 
+                      p_values_anger["ind_ope_ang_ada"], p_values_anger["ind_int_ang_ada"])
 p_values_ang_tot <- c(p_values_anger["tot_ext"], p_values_anger["tot_agr"], 
                       p_values_anger["tot_con"], p_values_anger["tot_neu"], 
-                      p_values_anger["tot_ope"])
+                      p_values_anger["tot_ope"], p_values_anger["tot_int"])
 
 
 # Apply FDR correction separately for each context and path type

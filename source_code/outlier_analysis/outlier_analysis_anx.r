@@ -1,4 +1,8 @@
 # Outlier Analysis
+#
+#################################################################
+# anxiety symptoms at W11 (ASR) as the outcome
+#################################################################
 # 
 # This script performs outlier analysis for all linear regression and 
 # mediation models. It identifies model fit outliers using leverage values and 
@@ -14,7 +18,7 @@ set.seed(123)
 library(tidyverse)
 
 # Load data ----
-data <- read_csv("data/analysis/extended_data_with_transformations.csv")
+data <- read_csv("data/analysis/extended_data_with_transformations_with_anx.csv")
 
 # Define a function to perform outlier analysis for a given model (and plot) ----
 perform_outlier_analysis <- function(model, model_name, save_plot = TRUE,
@@ -67,7 +71,7 @@ perform_outlier_analysis <- function(model, model_name, save_plot = TRUE,
   if (save_plot) {
     dir.create(plot_dir, recursive = TRUE, showWarnings = FALSE)
     safe_model_name <- gsub("[^A-Za-z0-9_-]", "_", model_name)
-    plot_path <- file.path(plot_dir, paste0("outlier_diagnostics_", safe_model_name, ".svg"))
+    plot_path <- file.path(plot_dir, paste0("outlier_diagnostics_anx_", safe_model_name, ".svg"))
 
     svg(filename = plot_path, width = 12, height = 10)
     old_par <- par(no.readonly = TRUE)
@@ -123,70 +127,69 @@ perform_outlier_analysis <- function(model, model_name, save_plot = TRUE,
 
 # Perform outlier analysis for each model ----
 # H1 model ----
-fit_h1 <- lm(depression_score_yeo ~ extraversion + agreeableness +
-                                 conscientiousness + neuroticism + openness +
-                                 sex, data = data)
+fit_h1 <- lm(anxiety_score_ord ~ extraversion + agreeableness +
+                                 conscientiousness + neuroticism + openness + sex, data = data)
 results <- perform_outlier_analysis(fit_h1, "H1")
 
 # Save the output 
 # Outlier IDs
-write_csv(tibble(ID = results$all_outlier_ids), "data/analysis/h1_outliers.csv")
+write_csv(tibble(ID = results$all_outlier_ids), "data/analysis/h1_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results$outlier_summary, "data/analysis/h1_outlier_summary.csv")
+write_csv(results$outlier_summary, "data/analysis/h1_outlier_summary_anx.csv")
 
 # H2 models ----
 # Emotion-general ----
-fit_h2_general <- lm(depression_score_yeo ~ maladaptive_score +
+fit_h2_general <- lm(anxiety_score_ord ~ maladaptive_score +
                                             adaptive_score +
                                             sex, data = data)
 results_h2_general <- perform_outlier_analysis(fit_h2_general, "H2_General")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h2_general$all_outlier_ids), "data/analysis/h2_general_outliers.csv")
+write_csv(tibble(ID = results_h2_general$all_outlier_ids), "data/analysis/h2_general_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h2_general$outlier_summary, "data/analysis/h2_general_outlier_summary.csv")
+write_csv(results_h2_general$outlier_summary, "data/analysis/h2_general_outlier_summary_anx.csv")
 
 # Sadness-specific ----
-fit_h2_sadness <- lm(depression_score_yeo ~ sadness_maladaptive_score +
+fit_h2_sadness <- lm(anxiety_score_ord ~ sadness_maladaptive_score +
                                             sadness_adaptive_score +
                                             sex, data = data)
 results_h2_sadness <- perform_outlier_analysis(fit_h2_sadness, "H2_Sadness")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h2_sadness$all_outlier_ids), "data/analysis/h2_sadness_outliers.csv")
+write_csv(tibble(ID = results_h2_sadness$all_outlier_ids), "data/analysis/h2_sadness_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h2_sadness$outlier_summary, "data/analysis/h2_sadness_outlier_summary.csv")
+write_csv(results_h2_sadness$outlier_summary, "data/analysis/h2_sadness_outlier_summary_anx.csv")
 
 # Anxiety-specific ----
-fit_h2_anxiety <- lm(depression_score_yeo ~ anxiety_maladaptive_score +
+fit_h2_anxiety <- lm(anxiety_score_ord ~ anxiety_maladaptive_score +
                                             anxiety_adaptive_score +
                                             sex, data = data)
 results_h2_anxiety <- perform_outlier_analysis(fit_h2_anxiety, "H2_Anxiety")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h2_anxiety$all_outlier_ids), "data/analysis/h2_anxiety_outliers.csv")
+write_csv(tibble(ID = results_h2_anxiety$all_outlier_ids), "data/analysis/h2_anxiety_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h2_anxiety$outlier_summary, "data/analysis/h2_anxiety_outlier_summary.csv")
+write_csv(results_h2_anxiety$outlier_summary, "data/analysis/h2_anxiety_outlier_summary_anx.csv")
 
 # Anger-specific ----
-fit_h2_anger <- lm(depression_score_yeo ~ anger_maladaptive_score +
+fit_h2_anger <- lm(anxiety_score_ord ~ anger_maladaptive_score +
                                             anger_adaptive_score +
                                             sex, data = data)
 results_h2_anger <- perform_outlier_analysis(fit_h2_anger, "H2_Anger")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h2_anger$all_outlier_ids), "data/analysis/h2_anger_outliers.csv")
+write_csv(tibble(ID = results_h2_anger$all_outlier_ids), "data/analysis/h2_anger_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h2_anger$outlier_summary, "data/analysis/h2_anger_outlier_summary.csv")
+write_csv(results_h2_anger$outlier_summary, "data/analysis/h2_anger_outlier_summary_anx.csv")
 
 # H3 models ----
 # General ----
@@ -196,10 +199,10 @@ results_h3_general <- perform_outlier_analysis(fit_h3_general, "H3_General")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h3_general$all_outlier_ids), "data/analysis/h3_general_outliers.csv")
+write_csv(tibble(ID = results_h3_general$all_outlier_ids), "data/analysis/h3_general_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h3_general$outlier_summary, "data/analysis/h3_general_outlier_summary.csv")
+write_csv(results_h3_general$outlier_summary, "data/analysis/h3_general_outlier_summary_anx.csv")
 
 # Sadness-specific ----
 fit_h3_sadness <- lm(cbind(sadness_maladaptive_score, sadness_adaptive_score_ord) ~ extraversion + agreeableness +
@@ -208,10 +211,10 @@ results_h3_sadness <- perform_outlier_analysis(fit_h3_sadness, "H3_Sadness")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h3_sadness$all_outlier_ids), "data/analysis/h3_sadness_outliers.csv")
+write_csv(tibble(ID = results_h3_sadness$all_outlier_ids), "data/analysis/h3_sadness_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h3_sadness$outlier_summary, "data/analysis/h3_sadness_outlier_summary.csv")
+write_csv(results_h3_sadness$outlier_summary, "data/analysis/h3_sadness_outlier_summary_anx.csv")
 
 # Anxiety-specific ----
 fit_h3_anxiety <- lm(cbind(anxiety_maladaptive_score, anxiety_adaptive_score_box) ~ extraversion + agreeableness +
@@ -220,10 +223,10 @@ results_h3_anxiety <- perform_outlier_analysis(fit_h3_anxiety, "H3_Anxiety")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h3_anxiety$all_outlier_ids), "data/analysis/h3_anxiety_outliers.csv")
+write_csv(tibble(ID = results_h3_anxiety$all_outlier_ids), "data/analysis/h3_anxiety_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h3_anxiety$outlier_summary, "data/analysis/h3_anxiety_outlier_summary.csv")
+write_csv(results_h3_anxiety$outlier_summary, "data/analysis/h3_anxiety_outlier_summary_anx.csv")
 
 # Anger-specific ----
 fit_h3_anger <- lm(cbind(anger_maladaptive_score, anger_adaptive_score_yeo) ~ extraversion + agreeableness +
@@ -232,10 +235,10 @@ results_h3_anger <- perform_outlier_analysis(fit_h3_anger, "H3_Anger")
 
 # Save the output
 # Outlier IDs
-write_csv(tibble(ID = results_h3_anger$all_outlier_ids), "data/analysis/h3_anger_outliers.csv")
+write_csv(tibble(ID = results_h3_anger$all_outlier_ids), "data/analysis/h3_anger_outliers_anx.csv")
 
 # Outlier summary
-write_csv(results_h3_anger$outlier_summary, "data/analysis/h3_anger_outlier_summary.csv")
+write_csv(results_h3_anger$outlier_summary, "data/analysis/h3_anger_outlier_summary_anx.csv")
 
 # Combine all outlier summaries into a single table ----
 all_outlier_summaries <- bind_rows(
@@ -249,23 +252,10 @@ all_outlier_summaries <- bind_rows(
   results_h3_anxiety$outlier_summary,
   results_h3_anger$outlier_summary
 )
-write_csv(all_outlier_summaries, "data/analysis/all_outlier_summaries.csv")
+write_csv(all_outlier_summaries, "data/analysis/all_outlier_summaries_anx.csv")
 
 # Get all unique outlier IDs across all models ----
 # Each model's result is already a list with unique outlier IDs across the different methods for that model, so we can just combine those lists and get unique IDs across all models
-
-# For the general emotion context, we can combine the outlier IDs from the H1 model, the H2 general model, and the H3 general model to get a unique set of outlier IDs for the general emotion context. This will give us insight into which observations are consistently identified as outliers across different models that focus on the general emotion context.
-all_outlier_ids_general <- unique(c(
-  results$all_outlier_ids,
-  results_h2_general$all_outlier_ids,
-  results_h3_general$all_outlier_ids
-))
-
-print(paste("Total unique outliers across all general models:", length(all_outlier_ids_general)))
-
-write_csv(tibble(ID = all_outlier_ids_general), "data/analysis/all_unique_outliers_general.csv")
-
-# For completeness, also across all emotion contexts, we can combine all outlier IDs from all models and get the unique set of outlier IDs across everything. This will give us a comprehensive list of all unique outliers identified in any of the models.
 all_outlier_ids <- unique(c(
   results$all_outlier_ids,
   results_h2_general$all_outlier_ids,
@@ -286,4 +276,4 @@ print(paste("Sadness:", length(unique(c(results$all_outlier_ids, results_h2_sadn
 print(paste("Anxiety:", length(unique(c(results$all_outlier_ids, results_h2_anxiety$all_outlier_ids, results_h3_anxiety$all_outlier_ids)))))
 print(paste("Anger:", length(unique(c(results$all_outlier_ids, results_h2_anger$all_outlier_ids, results_h3_anger$all_outlier_ids)))))
 
-write_csv(tibble(ID = all_outlier_ids), "data/analysis/all_unique_outliers.csv")
+write_csv(tibble(ID = all_outlier_ids), "data/analysis/all_unique_outliers_anx.csv")

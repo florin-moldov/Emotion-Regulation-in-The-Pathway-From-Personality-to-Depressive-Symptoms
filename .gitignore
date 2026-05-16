@@ -17,8 +17,11 @@ renv/local/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# All of the data (all data is UKB data, which cannot be shared)
+# All of the data
 data/
 
 # Virtual Environments
 .mthesisvenv/
+
+# Figures and plots
+reports/

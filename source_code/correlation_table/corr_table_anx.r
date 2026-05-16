@@ -1,13 +1,12 @@
 # Preliminary analysis (correlation table) ----
-# Correlation table between HiPIC dimensions,
-# FEEL-E scores, CBCL internalizing problems scores, 
-# and ASR Depression scores 
+# Correlation table between HiPIC dimension,
+# FEEL-E scores, ASR Anxiety scores, and ASR Depression scores
 
 # Set seed for reproducibility ----
 set.seed(123)
 
 # Set sink to capture all output in a text file ----
-sink("data/analysis/corr_table_cbcl_output.txt")
+sink("data/analysis/corr_table_anx_output.txt")
 
 # Load necessary libraries ----
 library(tidyverse)
@@ -17,13 +16,11 @@ library(psych)
 
 # Load data ----
 w6_hipic <- read_csv("data/preprocessed/preproc_w6_hipic.csv")
-w6_cbcl <- read_csv("data/preprocessed/preproc_w6_cbcl.csv")
 w10_feel <- read_csv("data/preprocessed/preproc_w10_feel.csv")
 w11_asr <- read_csv("data/preprocessed/preproc_w11_asr.csv")
 
 # Harmonize join key type
 w6_hipic <- w6_hipic |> mutate(ID = trimws(as.character(ID)))
-w6_cbcl <- w6_cbcl |> mutate(ID = trimws(as.character(ID)))
 w10_feel <- w10_feel |> mutate(ID = trimws(as.character(ID)))
 w11_asr <- w11_asr |> mutate(ID = trimws(as.character(ID)))
 
@@ -32,8 +29,6 @@ w11_asr <- w11_asr |> mutate(ID = trimws(as.character(ID)))
 merged_data <- w6_hipic |>
   select(ID, extraversion, agreeableness, conscientiousness,
          neuroticism, openness) |>
-  full_join(w6_cbcl |>
-              select(ID, internalizing), by = "ID") |>
   full_join(w10_feel |>
               select(ID, sadness_adaptive_score, anxiety_adaptive_score,
                      anger_adaptive_score, adaptive_score,
@@ -41,7 +36,7 @@ merged_data <- w6_hipic |>
                      anger_maladaptive_score,
                      maladaptive_score), by = "ID") |>
   full_join(w11_asr |>
-              select(ID, depression_score), by = "ID")
+              select(ID, anxiety_score, depression_score), by = "ID")
 
 # Delete those with empty IDs (identified in demographics.r)
 # We also ensure that all variables are numeric for correlation analysis
@@ -50,9 +45,6 @@ merged_data <- merged_data |>
                 mutate(across(-ID, as.numeric))
 # Check nrows after merge
 cat("Number of rows after merge:", nrow(merged_data), "\n")
-
-# Save merged data for future use
-write_csv(merged_data, "data/merged/merged_data_with_cbcl.csv")
 
 # Descriptive statistics ----
 # Ofc, only for non-missing values, so we set na.rm = TRUE
@@ -86,7 +78,7 @@ desc_stats <- merged_data |>
 print(desc_stats)
 
 # Save the tidy table
-write_csv(desc_stats, "data/descriptives/merged_stats_with_cbcl.csv")
+write_csv(desc_stats, "data/descriptives/merged_stats_with_anx.csv")
 
 # Visualize relationships with pairwise scatterplots ----
 # As initial exploration
@@ -98,7 +90,7 @@ p <- ggpairs(merged_data |> select(-ID),
   theme_minimal() +
   ggtitle("Pairwise Scatterplots and Density Plots")
 
-ggsave("reports/plots/pairwise_scatterplots_with_cbcl.svg",
+ggsave("reports/plots/pairwise_scatterplots_with_anx.svg",
        plot = p, width = 20, height = 20)
 
 # Checking normality of variables (for correlation method choice) ----
@@ -113,7 +105,7 @@ for (var in names(numeric_vars)) {
     ggtitle(paste("QQ Plot for", var)) +
     theme_minimal()
 
-  ggsave(paste0("reports/plots/qqplots/qq_", var, "_with_cbcl.svg"),
+  ggsave(paste0("reports/plots/qqplots/qq_", var, "_with_anx.svg"),
          plot = p, width = 6, height = 4)
 
   # Shapiro-Wilk test
@@ -143,9 +135,9 @@ pvalue_matrix <- corr_results$p
 
 # Save correlation results for future use
 write_csv(as.data.frame(cor_matrix),
-          "data/analysis/correlation_matrix_with_cbcl.csv")
+          "data/analysis/correlation_matrix_with_anx.csv")
 write_csv(as.data.frame(pvalue_matrix),
-          "data/analysis/correlation_pvalues_with_cbcl.csv")
+          "data/analysis/correlation_pvalues_with_anx.csv")
 
 # Apply FDR correction to p-values ----
 # Important to note: correction is applied within
@@ -154,21 +146,17 @@ write_csv(as.data.frame(pvalue_matrix),
 # Get variable groups for each context
 contexts <- list(
   general = c("extraversion", "agreeableness",
-              "conscientiousness", "neuroticism", "openness",
-              "internalizing", "adaptive_score",
-              "maladaptive_score", "depression_score"),
+              "conscientiousness", "neuroticism", "openness", "adaptive_score",
+              "maladaptive_score", "anxiety_score", "depression_score"),
   sadness = c("extraversion", "agreeableness",
-              "conscientiousness", "neuroticism", "openness",
-              "internalizing", "sadness_adaptive_score",
-              "sadness_maladaptive_score", "depression_score"),
+              "conscientiousness", "neuroticism", "openness", "sadness_adaptive_score",
+              "sadness_maladaptive_score", "anxiety_score", "depression_score"),
   anxiety = c("extraversion", "agreeableness",
-              "conscientiousness", "neuroticism", "openness",
-              "internalizing", "anxiety_adaptive_score",
-              "anxiety_maladaptive_score", "depression_score"),
+              "conscientiousness", "neuroticism", "openness", "anxiety_adaptive_score",
+              "anxiety_maladaptive_score", "anxiety_score", "depression_score"),
   anger = c("extraversion", "agreeableness",
-            "conscientiousness", "neuroticism", "openness",
-            "internalizing", "anger_adaptive_score",
-            "anger_maladaptive_score", "depression_score")
+            "conscientiousness", "neuroticism", "openness", "anger_adaptive_score",
+            "anger_maladaptive_score", "anxiety_score", "depression_score")
 )
 
 # Extract and adjust p-values by context with explicit pair mapping
@@ -207,7 +195,7 @@ names(adjusted_pvalue_matrices) <- names(contexts)
 invisible(lapply(names(adjusted_pvalue_matrices), function(ctx) {
   write_csv(as.data.frame(adjusted_pvalue_matrices[[ctx]]),
             paste0("data/analysis/correlation_pvalues_adjusted_", ctx,
-                   "_with_cbcl.csv"))
+                   "_with_anx.csv"))
 }))
 
 # End sink to stop capturing output in the text file ----
@@ -247,6 +235,11 @@ invisible(lapply(names(contexts), function(ctx) {
     scale_y_discrete(labels = function(x) stringr::str_wrap(stringr::str_replace_all(x, "_", " "), width = 10)) +
     scale_x_discrete(labels = function(x) stringr::str_wrap(stringr::str_replace_all(x, "_", " "), width = 10)) +
     theme_minimal()
-  ggsave(paste0("reports/plots/correlation_matrix_", ctx, "_with_cbcl.svg"),
+  ggsave(paste0("reports/plots/correlation_matrix_", ctx, "_with_anx.svg"),
          plot = p, width = 10, height = 10)
 }))
+
+# Save merged data for future use
+# But delete depression score to avoid confusion with the mediation models (which only use anxiety)
+merged_data <- merged_data |> select(-depression_score)
+write_csv(merged_data, "data/merged/merged_data_with_anx.csv")

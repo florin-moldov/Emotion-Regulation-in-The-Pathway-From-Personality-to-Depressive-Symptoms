@@ -135,7 +135,7 @@ print(parameterEstimates(fit_h1, boot.ci.type = "bca.simple"))
 # Save p-values for later FDR correction by context 
 # (i.e., general, sadness, anxiety, anger)
 p_values_h1 <- parameterEstimates(fit_h1) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H1***\n")
@@ -207,7 +207,7 @@ print(parameterEstimates(fit_h2_general, boot.ci.type = "bca.simple"))
 
 # Save p-values for later FDR correction by context
 p_values_h2_gen <- parameterEstimates(fit_h2_general) |>
-  filter(lhs == "depression_score_sqrt" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter(lhs == "depression_score_sqrt" & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (General Emotion)***\n")
@@ -279,7 +279,7 @@ print(parameterEstimates(fit_h2_sadness, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_sad <- parameterEstimates(fit_h2_sadness) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Sadness-specific Emotion)***\n")
@@ -350,7 +350,7 @@ print(parameterEstimates(fit_h2_anxiety, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_anx <- parameterEstimates(fit_h2_anxiety) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Anxiety-specific Emotion)***\n")
@@ -420,7 +420,7 @@ print(parameterEstimates(fit_h2_anger, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h2_ang <- parameterEstimates(fit_h2_anger) |>
-  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter(lhs == "depression_score_yeo" & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H2 (Anger-specific Emotion)***\n")
@@ -520,7 +520,7 @@ print(parameterEstimates(fit_h3_general, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_gen <- parameterEstimates(fit_h3_general) |>
-  filter((lhs == "maladaptive_score_yeo" | lhs == "adaptive_score_yeo") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter((lhs == "maladaptive_score_yeo" | lhs == "adaptive_score_yeo") & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (General Emotion)***\n")
@@ -597,7 +597,7 @@ print(parameterEstimates(fit_h3_sad, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_sad <- parameterEstimates(fit_h3_sad) |>
-  filter((lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_box") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter((lhs == "sadness_maladaptive_score" | lhs == "sadness_adaptive_score_box") & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Sadness-specific Emotion)***\n")
@@ -674,7 +674,7 @@ print(parameterEstimates(fit_h3_anx, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_anx <- parameterEstimates(fit_h3_anx) |>
-  filter((lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_box") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter((lhs == "anxiety_maladaptive_score" | lhs == "anxiety_adaptive_score_box") & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Anxiety-specific Emotion)***\n")
@@ -715,15 +715,15 @@ non_missing_idx <- !is.na(data_h3_ang_no_outliers$anger_adaptive_score)
 # Fit on non-missing values only
 bn_ada_ang <- bestNormalize(data_h3_ang_no_outliers$anger_adaptive_score[non_missing_idx], r = 100)
 print(bn_ada_ang)
-# Yeo Johnson transformation with lambda = 2.351533 is the best transformation
+# Box Cox transformation with lambda = 1.997 is the best transformation
 # Initialize and assign with length-matched predictions
-data_h3_ang_no_outliers$anger_adaptive_score_yeo <- NA_real_
-data_h3_ang_no_outliers$anger_adaptive_score_yeo[non_missing_idx] <- as.numeric(
+data_h3_ang_no_outliers$anger_adaptive_score_box <- NA_real_
+data_h3_ang_no_outliers$anger_adaptive_score_box[non_missing_idx] <- as.numeric(
   predict(bn_ada_ang, newdata = data_h3_ang_no_outliers$anger_adaptive_score[non_missing_idx])
 )
 
 # Check again the assumptions with the transformed outcome variable
-fit_h3_ad_ang_check_transformed <- lm(anger_adaptive_score_yeo ~  extraversion + agreeableness + 
+fit_h3_ad_ang_check_transformed <- lm(anger_adaptive_score_box ~  extraversion + agreeableness + 
                    conscientiousness + neuroticism + openness + internalizing + sex, data = data_h3_ang_no_outliers)
 svg("reports/plots/lm_diagnostics/no_outliers_check_model_h3_ad_anger_transformed_with_cbcl.svg", width = 12, height = 10)
 print(check_model(fit_h3_ad_ang_check_transformed)) # looks better
@@ -736,7 +736,7 @@ model_h3_ang <- '
   # Maladaptive anger emotion regulation strategy use ~ personality + internalizing + sex
   # Adaptive anger emotion regulation strategy use ~ personality + internalizing + sex
     anger_maladaptive_score ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
-    anger_adaptive_score_yeo ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
+    anger_adaptive_score_box ~ extraversion + agreeableness + conscientiousness + neuroticism + openness + internalizing + sex
 '
 fit_h3_ang <- sem(model_h3_ang, data = data_h3_ang_no_outliers, missing = "fiml", 
                       se = "bootstrap", bootstrap = 10000, fixed.x = FALSE)
@@ -749,7 +749,7 @@ print(parameterEstimates(fit_h3_ang, boot.ci.type = 'bca.simple'))
 
 # Save p-values for later FDR correction by context
 p_values_h3_ang <- parameterEstimates(fit_h3_ang) |>
-  filter((lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_yeo") & op == "~" & !rhs %in% c("sex", "internalizing")) |>
+  filter((lhs == "anger_maladaptive_score" | lhs == "anger_adaptive_score_box") & op == "~" & !rhs %in% c("sex")) |>
   pull(pvalue, name = rhs)
 
 cat("***Standardized parameter estimates H3 (Anger-specific Emotion)***\n")
@@ -801,7 +801,7 @@ data_med_gen <- data |>
 # Add transformed variables for the general emotion model
 data_med_gen <- data_med_gen |>
   mutate(
-    depression_score_yeo = data_h2_gen_no_outliers$depression_score_yeo[match(ID, data_h2_gen_no_outliers$ID)],
+    depression_score_yeo = data_h1_no_outliers$depression_score_yeo[match(ID, data_h1_no_outliers$ID)],
     maladaptive_score_yeo = data_h3_gen_no_outliers$maladaptive_score_yeo[match(ID, data_h3_gen_no_outliers$ID)],
     adaptive_score_yeo = data_h3_gen_no_outliers$adaptive_score_yeo[match(ID, data_h3_gen_no_outliers$ID)]
   )
@@ -866,6 +866,6 @@ data_med_ang <- data |>
 data_med_ang <- data_med_ang |>
   mutate(
     depression_score_yeo = data_h2_ang_no_outliers$depression_score_yeo[match(ID, data_h2_ang_no_outliers$ID)],
-    anger_adaptive_score_yeo = data_h3_ang_no_outliers$anger_adaptive_score_yeo[match(ID, data_h3_ang_no_outliers$ID)]
+    anger_adaptive_score_box = data_h3_ang_no_outliers$anger_adaptive_score_box[match(ID, data_h3_ang_no_outliers$ID)]
   )
 write_csv(data_med_ang, "data/analysis/no_outliers_data_med_ang_cbcl.csv")
